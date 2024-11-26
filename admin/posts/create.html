@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- <title>Management System</title> -->
+        
+        <!-- Font Awesome -->
+        <!-- <script src="https://kit.fontawesome.com/5734d4928d.js"></script> -->
+        <link rel="stylesheet" href="../../fontcss/all.css">
+
+        <!-- Google font -->
+        <link href="https://fonts.googleapis.com/css?family=Candal|Lora&display=swap" rel="stylesheet">
+
+        <!-- Custom Styling -->
+        <link rel="stylesheet" href="../../css/style.css">
+
+        
+        <!-- Admin Styling -->
+        <link rel="stylesheet" href="../../css/admin.css">
+
+        
+        <!-- <script src="https://cdn.ckeditor.com/ckeditor5/<version>/classic/ckeditor.js"></script> -->
+
+                 <!-- JQuery -->
+                 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    
+                 <!-- CKeditor -->
+                 <script src="https://cdn.ckeditor.com/ckeditor5/16.0.0/classic/ckeditor.js"></script>
+                 <!-- <script src="[ckeditor-build-path]/ckeditor.js"></script> -->
+
+        <title>Admin Section - Add Posts</title>
+
+    </head>
+    <body>
+            <header>
+                    <div class="logo">
+                        <img src="../../images/cybill.png">
+                    </div>
+                    <div class="logo">
+                            <h1 class="logo-text"><span>Cybill</span>Techs</h1>
+                        </div>
+                    <i class="fa fa-bars menu-toggle"></i>
+                    <ul class="nav">
+                        
+                            <li><a href="../../Index/index2.html" class="hover">Home</a></li>
+                        <li><a href="../../Index/index2.html">
+                            
+                                <i class="fa fa-user"></i>
+                                  Profile 
+                                <i class="fa fa-chevron-down" style="font-size: .8em;"></i>
+                            </a>
+                            <ul>
+                                <li><a href="../../Index/index.html" class="logout">Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </header>
+
+    <!-- Admin Wrapper --> 
+    <div class="admin-wrapper">
+
+        <!-- Left Slidebar -->
+        <div class="left-sidebar">
+            <ul>
+                <li><a href="index.html">Manage Posts</a></li>
+                <li><a href="../users/index.html">Manage Users</a></li>
+                <li><a href="../reports/create.html">Check Reports</a></li>
+            </ul>
+
+        </div>
+        <!-- //Left Slidebar -->
+
+        <!-- Admin Content -->
+        <div class="admin-content">
+            <div class="button-group">
+                <a href="create.html" class="btn btn-big" >Add Posts</a>
+                <a href="index.html" class="btn btn-big">Manage Posts</a>
+            </div>
+
+            <div class="content">
+                <h2 class="page-title">Add Posts</h2>
+
+                <form action="create.html" method="post">
+                    <div>
+                        <label>Title</label>
+                        <input type="text" min name="title" class="text-input">
+                    </div>
+                       <label><b>Body</b></label>
+                    <div id="editor">
+
+                            <!-- <textarea name="body"></textarea> -->
+                            <script>
+                                ClassicEditor
+                                    .create( document.querySelector( '#editor' ) )
+                                    .catch( error => {
+                                        console.error( error );
+                                    } );
+                            </script>
+                    </div>
+
+                    <div>
+                        <label>Image</label>
+                        <input type="file" name="image" class="text-input">
+                    </div>
+                    <div>
+                        <label>Topic</label>
+                        <select name="topic">
+                            <option value="Poetry">Poetry</option>
+                            <option value="Life Lessons">Life Lessons</option>
+
+                        </select>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-big">Add Post</button>
+                    </div>
+                </form>
+
+            </div>
+
+        </div>
+        <!-- //Admin Content -->
+    </div>
+    <!-- //Admin Wrapper -->
+    
+        <!-- JQuery -->
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script> -->
+
+        <!-- CKeditor -->
+        <!-- <script src="https://cdn.ckeditor.com/ckeditor5/16.0.0/classic/ckeditor.js"></script> -->
+        <!-- <script src="[ckeditor-build-path]/ckeditor.js"></script> -->
+
+        <!-- Custom Script -->
+        <script src="../../js/scripts.js"></script>
+    </body>
+    </html>
