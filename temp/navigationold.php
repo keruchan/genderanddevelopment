@@ -1,20 +1,18 @@
 <?php
-// Start session only if not already active
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 require 'connecting/connect.php'; // Ensure correct path
 
-$displayName = '<i class="fa fa-user"></i> LOGIN'; // Default text
-$loginLink = 'userin.php'; // Default login link
+$displayName = '<i class="fa fa-user"></i> LOGIN';
+$loginLink = 'userin.php';
 $loggedIn = false;
 
-if (isset($_SESSION['user_id'])) {
-    $userId = $_SESSION['user_id'];
+if (isset($_SESSION['admin_id'])) {
+    $userId = $_SESSION['admin_id'];
 
-    // Fetch user's first name from database
-    $stmt = $conn->prepare("SELECT firstname FROM users WHERE id = ?");
+    $stmt = $conn->prepare("SELECT username FROM admins WHERE id = ?");
     $stmt->bind_param("i", $userId);
     $stmt->execute();
     $stmt->bind_result($firstName);
@@ -22,8 +20,7 @@ if (isset($_SESSION['user_id'])) {
     $stmt->close();
 
     if (!empty($firstName)) {
-        $displayName = '<i class="fa fa-user"></i> ' . htmlspecialchars($firstName);
-        $loginLink = "#"; // Prevent navigation when logged in
+        $displayName = '<i class="fa fa-user"></i> Admin';
         $loggedIn = true;
     }
 }
@@ -35,26 +32,24 @@ if (isset($_SESSION['user_id'])) {
             <img src="pictures/gadimage1.png" alt="Logo">
         </div>
         <div class="logo">
-            <a href="index.php">
-                <h1 class="logo-text">Gender<span>&</span>Development</h1>
+            <a href="admin.php">
+                <h1 class="logo-text">Admin Panel</h1>
             </a>
         </div>
 
         <i class="fa fa-bars menu-toggle"></i>
         <ul class="nav">
-            <li><a href="index.php">Home</a></li>
-            <li><a href="#">About</a></li>
-            <li><a href="#">Services</a></li>
-            <li>
-                <a href="#" onclick="handleRequestClick(event)">Request</a>
-            </li>
+            <li><a href="admin.php">Dashboard</a></li>
+            <li><a href="adminrequests.php">Requests</a></li>
+            <li><a href="usersadmin.php">Users</a></li>
+            <li><a href="posts.php">Posts</a></li>
 
             <?php if ($loggedIn): ?>
                 <li class="dropdown">
-                    <a href="#" class="dropbtn"><?= $displayName ?> <i class="fa fa-chevron-down"></i></a>
+                    <a href="javascript:void(0);" class="dropbtn"><?= $displayName ?> <i class="fa fa-chevron-down"></i></a>
                     <ul class="dropdown-content">
                         <li><a href="update.php">Update</a></li>
-                        <li><a href="connecting/logout.php">Logout</a></li>
+                        <li><a href="connecting/logout.php" onclick="return confirmLogout();">Logout</a></li>
                     </ul>
                 </li>
             <?php else: ?>
@@ -64,19 +59,16 @@ if (isset($_SESSION['user_id'])) {
     </header>
 
     <script>
-        function handleRequestClick(event) {
-            <?php if (!$loggedIn): ?>
-                event.preventDefault(); // Stop default action
-                alert("You must be logged in to make a request.");
-                window.location.href = "userin.php"; // Redirect to login page
-            <?php else: ?>
-                window.location.href = "request.php"; // Proceed to request page
-            <?php endif; ?>
+        function confirmLogout() {
+            if (confirm("Are you sure you want to log out?")) {
+                alert("You have been logged out as Admin.");
+                return true; // Proceed with logout
+            }
+            return false; // Cancel logout
         }
     </script>
 
     <style>
-        /* Dropdown menu styles */
         .dropdown {
             position: relative;
             display: inline-block;
@@ -111,3 +103,4 @@ if (isset($_SESSION['user_id'])) {
             background-color: #ddd;
         }
     </style>
+</body>
