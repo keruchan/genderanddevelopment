@@ -101,26 +101,26 @@ if (isset($_SESSION['logout_message'])) {
             <div class="post">
                 <img src="images/1.jpg" alt="" class="post-image">
                 <div class="post-preview">
-                    <h2><a href="single.php">The Strongest and sweetest songs yet remain to be sung</a></h2>
-                    <i class="far fa-user">Shaik Jani</i>
+                    <h2><a href="single.php">GAD EVENT</a></h2>
+                    <i class="far fa-user">(writer)</i>
                     &nbsp;
                     <i class="far fa-calendar">Dec 9, 2019</i>
                     <p class="preview-text">
-                        The books contain knowledge on the Black Arts which Zeref used. Many of the spells known to come from the books involve the creation of Demons.
-                    </p>
+                        definition...
+                </p>
                     <a href="single.php" class="btn read-more">Read More</a>
                 </div>
             </div>
             <div class="post">
                 <img src="images/3.jpg" alt="" class="post-image">
                 <div class="post-preview">
-                    <h2><a href="single.php">The Strongest and sweetest songs yet remain to be sung</a></h2>
-                    <i class="far fa-user">Shaik Jani</i>
+                    <h2><a href="single.php">GAD EVENT 2</a></h2>
+                    <i class="far fa-user">(writer)</i>
                     &nbsp;
-                    <i class="far fa-calendar">Dec 9, 2019</i>
+                    <i class="far fa-calendar">Dec 9, 2025</i>
                     <p class="preview-text">
-                        The books contain knowledge on the Black Arts which Zeref used. Many of the spells known to come from the books involve the creation of Demons.
-                    </p>
+Description                   
+ </p>
                     <a href="single.php" class="btn read-more">Read More</a>
                 </div>
             </div>

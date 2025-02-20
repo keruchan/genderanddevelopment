@@ -1,0 +1,26 @@
+Ask Sir Rex for the project that is really needed
+
+Follow-up Questions to be Asked (Faculty Loading/Scheduling):
+1. Process flow ng pagpili ng Professor/instructor/part-timers.
+2. Qualifications ng P/I/P  and Requirements per subject, paano na-identify.
+3. Gaano Kadalas ma-double ang P/I/P sa isang subject.
+4. Gaano Kadalas yung prblem sa pag aasign ng subjects dahil hindi nila alam/ walang records ng mga P/I/P. 
+5. Load Requirements/Limit for P/I/P.
+6. 
+
+Database:
+1. Process flow(anu yung ginagamit na equipment, manual or automated, record books, excel file details).
+2. Personnel Involve, Signatories.(Admin/Faculty/Government Agencies).
+3. Lead Time per Process.
+4. Document Stamp Process.
+5. Is there Alumni Clearance Process. 
+6. Retention Policy process and info
+7. Internet Availability
+8. Process of Storage and Reteival of Documents
+9. Manpower (IT Personnel/IT Professor)
+10. Record System (As-Is)
+11. What if Record is Unavailable, What is the Process
+12. Process pag wala sa TOR yung Subject
+
+
+
