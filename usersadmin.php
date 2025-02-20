@@ -104,6 +104,7 @@ $groups = $groupQuery->fetch_all(MYSQLI_ASSOC);
     });
 
     function viewUser(user) {
+        console.log('viewUser function called with:', user); // Debugging log
         document.getElementById("modal_id").innerText = user.id;
         document.getElementById("modal_lastname").innerText = user.lastname;
         document.getElementById("modal_firstname").innerText = user.firstname;
@@ -120,9 +121,11 @@ $groups = $groupQuery->fetch_all(MYSQLI_ASSOC);
         
         let modal = document.getElementById("userModal");
         modal.style.display = "flex";
+        console.log('Modal should now be visible'); // Debugging log
     }
 
     function closeModal() {
+        console.log('closeModal function called'); // Debugging log
         document.getElementById("userModal").style.display = "none";
     }
 </script>
@@ -167,15 +170,14 @@ $groups = $groupQuery->fetch_all(MYSQLI_ASSOC);
     
     /* Modal Styling */
     .modal {
-        display: none;
+        display: none; /* Keeps it hidden on page load */
         position: fixed;
         z-index: 1000;
         left: 0;
         top: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.4);
-        display: flex;
+        background-color: rgba(0, 0, 0, 0.5);
         justify-content: center;
         align-items: center;
     }

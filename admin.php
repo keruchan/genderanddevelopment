@@ -119,7 +119,7 @@ function calculateMovingAverage($data, $windowSize) {
             <p id="pregnantRequests" class="dashval"><?= $pregnantRequests ?></p>
         </div>
         <div class="stat-box">
-            <h3>Latest Moving Average of Requests</h3>
+            <h3>Expected Requests Next Month</h3>
             <p id="movingAverage" class="dashval"><?= $latestMovingAverage ?></p>
         </div>
         <div class="stat-box">
