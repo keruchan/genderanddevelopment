@@ -9,6 +9,7 @@ require 'connecting/connect.php'; // Ensure correct path
 $displayName = '<i class="fa fa-user"></i> LOGIN'; // Default text
 $loginLink = 'userin.php'; // Default login link
 $loggedIn = false;
+$notifCount = 0;
 
 if (isset($_SESSION['user_id'])) {
     $userId = $_SESSION['user_id'];
@@ -26,6 +27,14 @@ if (isset($_SESSION['user_id'])) {
         $loginLink = "#"; // Prevent navigation when logged in
         $loggedIn = true;
     }
+
+    // Check for notifications
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM requests WHERE user_id = ? AND status_updated = 1");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $stmt->bind_result($notifCount);
+    $stmt->fetch();
+    $stmt->close();
 }
 ?>
 
@@ -46,7 +55,12 @@ if (isset($_SESSION['user_id'])) {
             <li><a href="#">About</a></li>
             <li><a href="#">Services</a></li>
             <li>
-                <a href="#" onclick="handleRequestClick(event)">Request</a>
+                <a href="view_requests.php" onclick="handleRequestClick(event)">
+                    Request
+                    <?php if ($notifCount > 0): ?>
+                        <span class="notif-icon"><?= $notifCount ?></span>
+                    <?php endif; ?>
+                </a>
             </li>
 
             <?php if ($loggedIn): ?>
@@ -110,4 +124,15 @@ if (isset($_SESSION['user_id'])) {
         .dropdown-content li a:hover {
             background-color: #ddd;
         }
+
+        /* Notification icon styles */
+        .notif-icon {
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 5px 10px;
+            margin-left: 5px;
+            font-size: 14px;
+        }
     </style>
+</body>

@@ -40,6 +40,7 @@ if (isset($_SESSION['admin_id'])) {
         <i class="fa fa-bars menu-toggle"></i>
         <ul class="nav">
             <li><a href="admin.php">Dashboard</a></li>
+            <li><a href="pred.php">Activity Calendar</a></li>
             <li><a href="adminrequests.php">Requests</a></li>
             <li><a href="usersadmin.php">Users</a></li>
             <li><a href="posts.php">Posts</a></li>

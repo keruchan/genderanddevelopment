@@ -141,7 +141,7 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
         document.getElementById("modalDescription").innerText = request.description;
 
         // Store attachment path
-        let attachmentPath = "requestupload/" + request.attachment;
+        let attachmentPath =  request.attachment;
         document.getElementById("modalAttachmentLink").setAttribute("data-src", attachmentPath);
 
         document.getElementById("viewModal").style.display = "flex";
