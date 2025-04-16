@@ -87,7 +87,7 @@ function buildCalendar($month, $year, $events) {
 
         foreach ($events as $event) {
             if ($event['event_date'] == $currentDate) {
-                $calendar .= "<div class='event' style='background-color: #4285F4; color: #fff; padding: 5px; margin: 5px 0; border-radius: 4px; cursor: pointer;' onclick='showEventModal(\"{$event['title']}\", \"{$event['description']}\")'>{$event['title']}</div>";
+                $calendar .= "<div class='event' style='background-color: #4285F4; color: #fff; padding: 5px; margin: 5px 0; border-radius: 4px; cursor: pointer;' onclick='showEventModal(\"{$event['title']}\", \"{$event['description']}\\nStart: {$event['start_time']}\\nEnd: {$event['end_time']}\")'>{$event['title']}</div>";
             }
         }
 
@@ -172,6 +172,12 @@ function hideAlertModal() {
         <br>
         <label for="eventDateInput">Date:</label>
         <input type="date" id="eventDateInput" name="event_date" required>
+        <br>
+        <label for="startTimeInput">Start Time:</label>
+        <input type="time" id="startTimeInput" name="start_time" required>
+        <br>
+        <label for="endTimeInput">End Time:</label>
+        <input type="time" id="endTimeInput" name="end_time" required>
         <br>
         <label for="eventAttachmentInput">Attachment:</label>
         <input type="file" id="eventAttachmentInput" name="attachment">

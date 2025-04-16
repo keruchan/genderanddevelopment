@@ -4,97 +4,83 @@
 <!-- Admin Wrapper --> 
 <div class="admin-wrapper">
 
-    <!-- Left Slidebar -->
-    <!-- <div class="left-sidebar">
-
-
-    </div> -->
-    <!-- //Left Slidebar -->
-
     <!-- Admin Content -->
-    <h2 class="form-title heading" style="font-size: 50px;">User Registration</h2>
+    <h2 class="form-title heading" style="font-size: 50px;">User Registration - Page 1</h2>
 
     <div class="auther-content">
-        <form action="connecting/register.php" method="post" enctype="multipart/form-data">
+        <form id="registrationForm" action="userupcourse.php" method="post" enctype="multipart/form-data" onsubmit="return checkEmailExists();">
             <div>
-                <label>First Name</label>
-                <input type="text" name="firstname" class="text-input" required>
+                <label class="required-label">
+                    <input type="text" name="firstname" class="text-input" placeholder="First Name" required>
+                    <span class="required-asterisk">*</span>
+                </label>
             </div>
             <div>
-                <label>Last Name</label>
-                <input type="text" name="lastname" class="text-input" required>
+                <label class="required-label">
+                    <input type="text" name="lastname" class="text-input" placeholder="Last Name" required>
+                    <span class="required-asterisk">*</span>
+                </label>
             </div>
             <div>
-                <label>Age</label>
-                <input type="number" name="age" class="text-input" required>
+                <label class="required-label">
+                    <input type="number" name="age" class="text-input" placeholder="Age" required>
+                    <span class="required-asterisk">*</span>
+                </label>
             </div>
             <div>
-                <label>Institutional Email</label>
-                <input type="email" name="email" class="text-input" required>
+                <label class="required-label">
+                    <input type="email" name="email" class="text-input" placeholder="Institutional Email" required>
+                    <span class="required-asterisk">*</span>
+                </label>
             </div>
             <div>
-                <label>Contact Number</label>
-                <input type="number" name="contact" class="text-input" required>
+                <label class="required-label">
+                    <input type="text" name="contact" class="text-input" placeholder="Contact Number (09123456789 or +639123456789)" required 
+                           pattern="(\+639\d{9}|09\d{9})" 
+                           title="Enter a valid contact number (09123456789 or +639123456789)">
+                    <span class="required-asterisk">*</span>
+                </label>
             </div>
             <div>
-                <label>Address</label>
-                <input type="text" name="address" class="text-input" required>
+                <label class="required-label">
+                    <input type="text" name="address" class="text-input" placeholder="Address" required>
+                    <span class="required-asterisk">*</span>
+                </label>
             </div>
             <div>
-                <label>Department</label>
-                <select id="department" name="department" class="text-input" required>
-                    <option value="" disabled selected>Select a department</option>
-                    <option value="CCS">CCS (College of Computer Studies)</option>
-                    <option value="CCJE">CCJE (College of Criminal Justice Education)</option>
-                    <option value="CAS">CAS (College of Arts and Sciences)</option>
-                    <option value="COE">COE (College of Engineering)</option>
-                    <option value="CBMA">CBMA (College of Business and Management Administration)</option>
-                    <option value="CHMT">CHMT (College of Hospitality Management and Tourism)</option>
-                    <option value="CTE">CTE (College of Teacher Education)</option>
-                </select>
+                <label style="font-size: 20px;">Sex:</label>
+                <input type="radio" name="gender" value="Male" required><span style="font-size: 20px; margin-right: 10px;">Male</span>
+                <input type="radio" name="gender" value="Female" required><span style="font-size: 20px;">Female</span>
+                <span class="required-asterisk">*</span>
+            </div>
+            <div style="display: inline-flex; align-items: center; width: 100%; gap: 10px;">
+                <label style="font-size: 25px; white-space: nowrap;">Profile Picture:</label>
+                <input type="file" name="profilepic" style="flex: 1; font-size: 20px;" required>
             </div>
             <div>
-                <label>Course</label>
-                <select id="course" name="course" class="text-input" required>
-                    <option value="" disabled selected>Select a course</option>
-                </select>
+                <label class="required-label">
+                    <select id="groupSelect" name="groupp" class="text-input" required>
+                        <option value="" disabled selected>Select Group</option>
+                        <option value="LGBTQ+">LGBTQ+</option>
+                        <option value="Pregnant">Pregnant</option>
+                        <option value="PWD">PWD</option>
+                    </select>
+                    <span class="required-asterisk">*</span>
+                </label>
+            </div>
+            <div id="impairmentDiv" style="display: none;">
+                <label class="required-label">
+                    <select id="impairmentSelect" name="impairment" class="text-input">
+                        <option value="" disabled selected>Select Impairment</option>
+                        <option value="Leg Impairment">Leg Impairment</option>
+                        <option value="Eye Impairment">Eye Impairment</option>
+                        <option value="Arms Impairment">Arms Impairment</option>
+                    </select>
+                    <span class="required-asterisk">*</span>
+                </label>
             </div>
             <div>
-                <label>Year</label>
-                <input type="text" name="year" class="text-input" required>
-            </div>
-            <div>
-                <label>Section</label>
-                <input type="text" name="section" class="text-input" required>
-            </div>
-            <div>
-                <label>Group</label>
-                <select name="groupp" class="text-input" required>
-                    <option value="" disabled selected>Select an option</option>
-                    <option value="LGBTQ+">LGBTQ+</option>
-                    <option value="Pregnant">Pregnant</option>
-                    <option value="PWD">PWD</option>
-                </select>
-            </div>
-            <div>
-                <label>Username</label>
-                <input type="text" name="username" class="text-input" required>
-            </div>
-            <div>
-                <label>Password</label>
-                <input type="password" name="password" class="text-input" required>
-            </div>
-            <div>
-                <label>Photo Upload</label>
-                <input type="file" name="profilepic" class="text-input" required>
-            </div>
-            <div>
-                <label>Gender:</label>
-                <input type="radio" name="gender" value="Male" required>Male
-                <input type="radio" name="gender" value="Female" required>Female
-            </div>
-            <div>
-                <button type="submit" name="register" class="btn btn-big">Submit</button>
+                <button type="submit" name="next" class="btn btn-big">Next</button>
             </div>
         </form>
     </div>
@@ -104,29 +90,89 @@
 </div>
 <!-- //Admin Wrapper -->
 
+<?php include_once('temp/footer.php') ?>
+
+<style>
+    .required-label {
+        position: relative;
+        display: block;
+    }
+
+    .required-asterisk {
+        color: red;
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 20px;
+        display: none; /* Initially hide the asterisk */
+    }
+
+    .text-input:invalid ~ .required-asterisk {
+        display: inline; /* Show the asterisk if input is invalid */
+    }
+</style>
+
 <script>
-    document.getElementById('department').addEventListener('change', function() {
-        var department = this.value;
-        var course = document.getElementById('course');
-        course.innerHTML = '<option value="" disabled selected>Select a course</option>'; // Clear previous options
+    document.addEventListener("DOMContentLoaded", function() {
+        const inputs = document.querySelectorAll(".text-input");
+        const groupSelect = document.getElementById("groupSelect");
+        const impairmentDiv = document.getElementById("impairmentDiv");
+        const impairmentSelect = document.getElementById("impairmentSelect");
 
-        var courses = {
-            'CCS': ['BS Computer Science', 'BS Information Technology', 'BS Information Systems'],
-            'CCJE': ['BS Criminology', 'BS Forensic Science'],
-            'CAS': ['BA Psychology', 'BA Political Science'],
-            'COE': ['BS Computer Engineering', 'BS Mechanical Engineering'],
-            'CBMA': ['BSBA Marketing', 'BSBA Finance', 'BS Office Administration'],
-            'CHMT': ['BS Hospitality Management', 'BS Tourism'],
-            'CTE': ['BS Education (Secondary Education)', 'BS Education (Primary Education)']
-        };
+        groupSelect.addEventListener("change", function() {
+            if (this.value === "PWD") {
+                impairmentDiv.style.display = "block";
+                impairmentSelect.required = true;
+            } else {
+                impairmentDiv.style.display = "none";
+                impairmentSelect.required = false;
+            }
+        });
 
-        courses[department].forEach(function(courseName) {
-            var option = document.createElement('option');
-            option.value = courseName;
-            option.text = courseName;
-            course.add(option);
+        inputs.forEach(input => {
+            input.addEventListener("input", function() {
+                const asterisk = this.nextElementSibling;
+                if (this.checkValidity()) {
+                    asterisk.style.display = "none";
+                } else {
+                    asterisk.style.display = "inline";
+                }
+            });
         });
     });
-</script>
 
-<?php include_once('temp/footer.php') ?>
+async function checkEmailExists() {
+    const email = document.querySelector('input[name="email"]').value;
+
+    if (!email) return true; // Allow form submission if no email is entered
+
+    try {
+        const response = await fetch('check_email.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'email=' + encodeURIComponent(email)
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'error') {
+            alert(data.message); // Show the message in an alert
+            const emailInput = document.querySelector('input[name="email"]');
+            emailInput.style.border = "2px solid red"; // Highlight the field
+            emailInput.focus();
+            window.location.href = "userup.php"; // Redirect to userup.php
+            return false; // Prevent form submission
+        } else {
+            return true; // Allow form submission
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert("Something went wrong, please try again.");
+        return false; // Prevent submission on error
+    }
+}
+
+</script>
