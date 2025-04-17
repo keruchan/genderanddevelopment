@@ -111,6 +111,7 @@ function buildCalendar($month, $year, $events) {
 echo buildCalendar($month, $year, $events);
 ?>
 
+<!-- Event Modal -->
 <div id="eventModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 1000;">
     <h2 id="eventTitle"></h2>
     <p id="eventDescription"></p>
@@ -140,72 +141,39 @@ function hidePostEventModal() {
     document.getElementById('postEventModal').style.display = 'none';
     document.getElementById('postModalOverlay').style.display = 'none';
 }
-
-function showSuccessModal(message) {
-    document.getElementById('successMessage').innerText = message;
-    document.getElementById('successModal').style.display = 'block';
-    document.getElementById('overlay').style.display = 'block';
-}
-
-function showFailureModal(message) {
-    document.getElementById('failureMessage').innerText = message;
-    document.getElementById('failureModal').style.display = 'block';
-    document.getElementById('overlay').style.display = 'block';
-}
-
-function hideAlertModal() {
-    document.getElementById('successModal').style.display = 'none';
-    document.getElementById('failureModal').style.display = 'none';
-    document.getElementById('overlay').style.display = 'none';
-}
 </script>
 
-<!-- Event Posting Modal -->
-<div id="postEventModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 1000;">
-    <h2>Post New Event</h2>
+<!-- Post Event Modal -->
+<div id="postEventModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 30px; box-shadow: 0 0 15px rgba(0,0,0,0.5); z-index: 1000; border-radius: 8px; width: 90%; max-width: 600px; font-family: Arial, sans-serif;">
+    <h2 style="font-size: 28px; margin-bottom: 20px; color: #333;">Post New Event</h2>
     <form id="postEventForm" action="post_event.php" method="POST" enctype="multipart/form-data">
-        <label for="eventTitleInput">Title:</label>
-        <input type="text" id="eventTitleInput" name="title" required>
-        <br>
-        <label for="eventDescriptionInput">Description:</label>
-        <textarea id="eventDescriptionInput" name="description" required></textarea>
-        <br>
-        <label for="eventDateInput">Date:</label>
-        <input type="date" id="eventDateInput" name="event_date" required>
-        <br>
-        <label for="startTimeInput">Start Time:</label>
-        <input type="time" id="startTimeInput" name="start_time" required>
-        <br>
-        <label for="endTimeInput">End Time:</label>
-        <input type="time" id="endTimeInput" name="end_time" required>
-        <br>
-        <label for="eventAttachmentInput">Attachment:</label>
-        <input type="file" id="eventAttachmentInput" name="attachment">
-        <br>
-        <button type="submit" style="background-color: #4285F4; color: #fff; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Post Event</button>
-        <button type="button" onclick="hidePostEventModal()" style="background-color: #ccc; color: #000; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+        <label for="eventTitleInput" style="font-size: 18px; display: block; margin-bottom: 10px; color: #555;">Title:</label>
+        <input type="text" id="eventTitleInput" name="title" required style="font-size: 16px; width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px;">
+        
+        <label for="eventDescriptionInput" style="font-size: 18px; display: block; margin-bottom: 10px; color: #555;">Description:</label>
+        <textarea id="eventDescriptionInput" name="description" required style="font-size: 16px; width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; height: 100px;"></textarea>
+        
+        <label for="eventDateInput" style="font-size: 18px; display: block; margin-bottom: 10px; color: #555;">Date:</label>
+        <input type="date" id="eventDateInput" name="event_date" required style="font-size: 16px; width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px;">
+        
+        <label for="startTimeInput" style="font-size: 18px; display: block; margin-bottom: 10px; color: #555;">Start Time:</label>
+        <input type="time" id="startTimeInput" name="start_time" required style="font-size: 16px; width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px;">
+        
+        <label for="endTimeInput" style="font-size: 18px; display: block; margin-bottom: 10px; color: #555;">End Time:</label>
+        <input type="time" id="endTimeInput" name="end_time" required style="font-size: 16px; width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px;">
+        
+        <label for="eventAttachmentInput" style="font-size: 18px; display: block; margin-bottom: 10px; color: #555;">Attachment:</label>
+        <input type="file" id="eventAttachmentInput" name="attachment" style="font-size: 16px; width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px;">
+        
+        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+            <button type="submit" style="background-color: #4285F4; color: #fff; font-size: 18px; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; flex: 1; margin-right: 10px;">Post Event</button>
+            <button type="button" onclick="hidePostEventModal()" style="background-color: #ccc; color: #000; font-size: 18px; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; flex: 1; margin-left: 10px;">Cancel</button>
+        </div>
     </form>
 </div>
 <div id="postModalOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 999;" onclick="hidePostEventModal()"></div>
 
-<!-- Success Modal -->
-<div id="successModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 1000;">
-    <h2>Success</h2>
-    <p id="successMessage"></p>
-    <button onclick="hideAlertModal()" style="background-color: #4285F4; color: #fff; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Close</button>
-</div>
-
-<!-- Failure Modal -->
-<div id="failureModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 1000;">
-    <h2>Failure</h2>
-    <p id="failureMessage"></p>
-    <button onclick="hideAlertModal()" style="background-color: #4285F4; color: #fff; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Close</button>
-</div>
-
-<!-- Overlay for modals -->
-<div id="overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 999;" onclick="hideAlertModal()"></div>
-
-<button onclick="showPostEventModal()" style="background-color: #4285F4; color: #fff; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Post New Event</button>
+<button onclick="showPostEventModal()" style="background-color: #4285F4; color: #fff; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px;">Post New Event</button>
 
 <?php include_once('temp/footeradmin.php'); ?>
 

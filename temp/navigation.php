@@ -53,7 +53,7 @@ if (isset($_SESSION['user_id'])) {
         <ul class="nav">
             <li><a href="index.php">Home</a></li>
             <li><a href="#">About</a></li>
-            <li><a href="event.php">Events</a></li>
+            <li><a href="event_list.php">Events</a></li>
             <li>
                 <a href="view_requests.php" onclick="handleRequestClick(event)">
                     Request
@@ -67,7 +67,9 @@ if (isset($_SESSION['user_id'])) {
                 <li class="dropdown">
                     <a href="#" class="dropbtn"><?= $displayName ?> <i class="fa fa-chevron-down"></i></a>
                     <ul class="dropdown-content">
-                        <li><a href="user_update.php">Update</a></li>
+                        <li><a href="user_profile.php">Profile</a></li>
+                        <li><a href="user_update_password.php">Update Password</a></li>
+                        <li><a href="user_archived.php">Archived</a></li>
                         <li><a href="connecting/logout.php">Logout</a></li>
                     </ul>
                 </li>

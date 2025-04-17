@@ -1,7 +1,84 @@
-<?php include_once('temp/header.php') ?>
-<?php include_once('temp/navigation.php') ?>
+<?php
+// Start a session and include necessary files
+session_start();
+require 'connecting/connect.php'; // Include database connection
+include_once('temp/header.php');
+include_once('temp/navigation.php');
 
-<!-- Admin Wrapper --> 
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Retrieve form data
+    $firstname = $_POST['firstname'];
+    $lastname = $_POST['lastname'];
+    $age = $_POST['age'];
+    $email = $_POST['email'];
+    $contact = $_POST['contact'];
+    $address = $_POST['address'];
+    $gender = $_POST['gender'];
+    $groupp = $_POST['groupp'];
+    $impairment = $_POST['impairment'] ?? ''; // For PWD group, impairment will be required
+    $profilePicPath = NULL;
+
+    // Check if profile picture is uploaded
+    if (!empty($_FILES["profilepic"]["name"])) {
+        $allowedTypes = ["image/jpeg", "image/png"];
+        $uploadDir = "profilepic/"; // Profile picture folder
+
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true); // Create directory if it doesn't exist
+        }
+
+        $fileType = mime_content_type($_FILES["profilepic"]["tmp_name"]);
+        if (!in_array($fileType, $allowedTypes)) {
+            echo "<script>
+                    alert('Invalid profile picture format. Only JPG and PNG allowed.');
+                    window.location.href = 'userupcourse.php';
+                  </script>";
+            exit();
+        }
+
+        if ($_FILES["profilepic"]["size"] > 2 * 1024 * 1024) { // Max 2MB
+            echo "<script>
+                    alert('Profile picture size should not exceed 2MB.');
+                    window.location.href = 'userupcourse.php';
+                  </script>";
+            exit();
+        }
+
+        // Generate a unique name for the uploaded file and move it to the profilepic folder
+        $profilePicPath = $uploadDir . uniqid() . '_' . basename($_FILES["profilepic"]["name"]);
+        if (!move_uploaded_file($_FILES["profilepic"]["tmp_name"], $profilePicPath)) {
+            echo "<script>
+                    alert('Failed to upload profile picture.');
+                    window.location.href = 'userupcourse.php';
+                  </script>";
+            exit();
+        }
+    }
+
+    // Insert user data into the database
+    $stmt = $conn->prepare("INSERT INTO users (firstname, lastname, age, email, contact, address, gender, groupp, impairment, profilepic) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssissssss", $firstname, $lastname, $age, $email, $contact, $address, $gender, $groupp, $impairment, $profilePicPath);
+
+    if ($stmt->execute()) {
+        echo "<script>
+                alert('User registered successfully!');
+                window.location.href = 'index.php'; // Redirect to a page (for example, dashboard)
+              </script>";
+    } else {
+        echo "<script>
+                alert('Registration failed. Please try again.');
+                window.location.href = 'userupcourse.php';
+              </script>";
+    }
+
+    $stmt->close();
+    $conn->close();
+}
+?>
+
+<!-- Admin Wrapper -->
 <div class="admin-wrapper">
 
     <!-- Admin Content -->
@@ -174,5 +251,4 @@ async function checkEmailExists() {
         return false; // Prevent submission on error
     }
 }
-
 </script>

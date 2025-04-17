@@ -77,7 +77,7 @@ $stmt->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GAD Stories</title>
+    <title>GAD POST</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         body {
@@ -176,12 +176,12 @@ $stmt->close();
 <body>
     <header id="main-header">
         <div class="container">
-            <h1>GAD Stories</h1>
+            <h1>GAD Post</h1>
         </div>
     </header>
 
     <div class="container">
-        <a href="create_story.php" class="create-button">Create New Story</a>
+        <a href="create_story.php" class="create-button">Create New Post</a>
 
         <?php
         // Show delete success message if available

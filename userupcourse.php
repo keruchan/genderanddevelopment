@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Store profile picture temporarily in session
     if (isset($_FILES['profilepic']) && $_FILES['profilepic']['error'] == 0) {
         $_SESSION['profilepic'] = $_FILES['profilepic']['name'];
-        move_uploaded_file($_FILES['profilepic']['tmp_name'], "uploads/" . $_FILES['profilepic']['name']);
+        move_uploaded_file($_FILES['profilepic']['tmp_name'], "profilepic/" . $_FILES['profilepic']['name']);
     }
 }
 ?>

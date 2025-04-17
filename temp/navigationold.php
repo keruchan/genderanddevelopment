@@ -49,7 +49,7 @@ if (isset($_SESSION['admin_id'])) {
                 <li class="dropdown">
                     <a href="javascript:void(0);" class="dropbtn"><?= $displayName ?> <i class="fa fa-chevron-down"></i></a>
                     <ul class="dropdown-content">
-                        <li><a href="update.php">Update</a></li>
+                        <li><a href="adminupdatepass.php">Update</a></li>
                         <li><a href="connecting/logout.php" onclick="return confirmLogout();">Logout</a></li>
                     </ul>
                 </li>

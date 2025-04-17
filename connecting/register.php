@@ -21,7 +21,7 @@ if (isset($_POST["register"])) {
     $password = password_hash(trim($_POST["password"]), PASSWORD_BCRYPT);
     $gender = $_SESSION["gender"];
     $impair = trim($_SESSION["impairment"]);
-    $profilePicPath = NULL;
+    $profilePicPath = $_SESSION["profilepic"];
 
     // Basic Validation
     if (empty($lastname) || empty($firstname) || empty($email) || empty($username) || empty($_POST["password"])) {

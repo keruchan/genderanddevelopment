@@ -86,7 +86,7 @@ $stmt->close();
         <i class="fas fa-chevron-left prev"></i>
         <i class="fas fa-chevron-right next"></i>
 
-        <h1 class="recent-post-title" style="left:75px; position:relative;">Stories</h1>
+        <h1 class="recent-post-title" style="left:75px; position:relative;">Posts</h1>
         <div class="post-wrapper">
             <?php foreach ($stories as $story): ?>
             <div class="post">

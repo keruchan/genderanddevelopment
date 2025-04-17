@@ -66,10 +66,30 @@
     </style>
 </head>
 <body>
-    <?php include_once('temp/header.php'); ?>
-    <?php include_once('temp/navigation.php'); ?>
+
+<?php
+    session_start();
+    include_once('temp/header.php');
+    include_once('temp/navigation.php');
+    require 'connecting/connect.php';
+
+    if (!isset($_SESSION['user_id']) || !isset($_SESSION['evaluation_event_id'])) {
+        echo "<script>alert('Invalid access.'); window.location.href = 'event_list.php';</script>";
+        exit();
+    }
+
+    $event_id = $_SESSION['evaluation_event_id'];
+    $stmt = $conn->prepare("SELECT title FROM events WHERE id = ?");
+    $stmt->bind_param("i", $event_id);
+    $stmt->execute();
+    $stmt->bind_result($event_title);
+    $stmt->fetch();
+    $stmt->close();
+?>
+
     <div class="container">
         <h2>Seminar/Training Evaluation Form</h2>
+        <p style="text-align:center; font-size: 18px;"><strong>Event Title:</strong> <?php echo htmlspecialchars($event_title); ?></p>
         <form action="submit_evaluation.php" method="POST">
             <table>
                 <tr>
