@@ -90,9 +90,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <label for="options">Type of Concern</label>
             <select id="options" name="options" class="text-input" required>
                 <option value="" disabled selected>Select an option</option>
-                <option value="LGBTQ+">LGBTQ+</option>
-                <option value="Pregnant">Pregnant</option>
-                <option value="PWD">PWD</option>
+                <option value="Bullying">Bullying</option>
+                <option value="LSPU Access">LSPU Access</option>
+                <option value="Empowerment">Empowerment</option>
+                <option value="Inclusion">Inclusion</option>
+                <option value="Discrimination">Discrimination</option>
             </select>
         </div>
 

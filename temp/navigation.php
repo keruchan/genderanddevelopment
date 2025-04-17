@@ -52,7 +52,7 @@ if (isset($_SESSION['user_id'])) {
         <i class="fa fa-bars menu-toggle"></i>
         <ul class="nav">
             <li><a href="index.php">Home</a></li>
-            <li><a href="#">About</a></li>
+            <!-- <li><a href="#">About</a></li> -->
             <li><a href="event_list.php">Events</a></li>
             <li>
                 <a href="view_requests.php" onclick="handleRequestClick(event)">
