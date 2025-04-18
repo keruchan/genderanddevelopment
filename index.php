@@ -51,12 +51,12 @@ while ($stmt->fetch()) {
 }
 $stmt->close();
 
-// Fetch events from the database with optional filtering by month
+// Fetch upcoming events from the database with optional filtering by month
 if (!empty($selectedMonth) && $selectedMonth !== 'all') {
-    $stmt = $conn->prepare("SELECT id, title, description, event_date, attachment_path, attendees FROM events WHERE MONTH(event_date) = ? ORDER BY event_date DESC");
+    $stmt = $conn->prepare("SELECT id, title, description, event_date, attachment_path, attendees FROM events WHERE MONTH(event_date) = ? AND event_date >= CURDATE() ORDER BY event_date DESC");
     $stmt->bind_param("s", $selectedMonth);
 } else {
-    $stmt = $conn->prepare("SELECT id, title, description, event_date, attachment_path, attendees FROM events ORDER BY event_date DESC");
+    $stmt = $conn->prepare("SELECT id, title, description, event_date, attachment_path, attendees FROM events WHERE event_date >= CURDATE() ORDER BY event_date DESC");
 }
 
 $stmt->execute();
@@ -93,8 +93,7 @@ $stmt->close();
                 <img src="images/<?php echo htmlspecialchars($story['picture']); ?>" alt="" class="slider-image">
                 <div class="post-info">
                     <h4><a href="single.php?id=<?php echo htmlspecialchars($story['id']); ?>"><?php echo htmlspecialchars($story['title']); ?></a></h4>
-                    <i class="far fa-user"><?php echo htmlspecialchars($story['writer']); ?></i>
-                    &nbsp;
+                    <!-- Removed writer information from the carousel -->
                     <i class="far fa-calendar"><?php echo htmlspecialchars($story['date_published']); ?></i>
                 </div>
             </div>
@@ -106,10 +105,10 @@ $stmt->close();
     <div class="content clearfix">
         <!-- Main Content -->
         <div class="main-content">
-            <h1 class="recent-post-title">Events</h1>
+            <h1 class="recent-post-title">Upcoming Events</h1>
 
             <?php if (empty($events)): ?>
-                <p>No events found for the selected month.</p>
+                <p>No upcoming events found for the selected month.</p>
             <?php else: ?>
                 <?php foreach ($events as $event): ?>
                 <div class="post">

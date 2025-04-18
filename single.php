@@ -36,7 +36,6 @@ $stmt->close();
         <div class="main-content single" id="story-container">
             <h1 class="post-title" id="story-title"><?php echo htmlspecialchars($title); ?></h1>
             <div class="post-meta">
-                <p><strong>By:</strong> <span id="story-writer"><?php echo htmlspecialchars($writer); ?></span></p>
                 <p><strong>Date Published:</strong> <span id="story-date"><?php echo date("F j, Y", strtotime($datePublished)); ?></span></p>
             </div>
 
@@ -53,7 +52,7 @@ $stmt->close();
 
         <!-- Sidebar: All Stories -->
         <div class="sidebar">
-            <h2>All Stories</h2>
+            <h2>All Posts</h2>
             <ul>
                 <?php foreach ($allStories as $story): ?>
                     <li class="<?php echo ($story['id'] == $story_id) ? 'current-story' : ''; ?>">
@@ -81,7 +80,6 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(data => {
                 // Update content dynamically
                 document.getElementById("story-title").innerText = data.title;
-                document.getElementById("story-writer").innerText = data.writer;
                 document.getElementById("story-date").innerText = data.datePublished;
                 document.getElementById("story-content").innerHTML = data.content;
 
@@ -177,13 +175,16 @@ html, body {
 }
 
 /* Sidebar */
+/* Sidebar */
 .sidebar {
     flex: 1;
     background-color: #fff;
     padding: 15px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    min-height: 100vh; /* Ensures sidebar covers the full height of the page */
 }
+
 
 /* Sidebar title */
 .sidebar h2 {
@@ -232,5 +233,14 @@ html, body {
     display: block;
     margin: 0 auto 5px;
     border-radius: 5px;
+}
+
+/* Main Content: Story Image (inside the main content box) */
+.story-picture img {
+    width: 100%; /* Ensures the image fills the container's width */
+    height: 300px; /* Fixed height for the story image */
+    object-fit: contain; /* Ensures the full image is visible, without cropping */
+    border-radius: 8px;
+    margin-bottom: 20px;
 }
 </style>

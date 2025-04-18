@@ -35,8 +35,6 @@ if (isset($_SESSION['logout_message'])) {
 // Process form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = $_POST['title'];
-    $writer = $_POST['writer'];
-    $date_published = $_POST['date_published'];
     $picture = $_FILES['picture']['name'];
     $content = $_POST['content'];
 
@@ -45,13 +43,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $target_file = $target_dir . basename($picture);
     move_uploaded_file($_FILES["picture"]["tmp_name"], $target_file);
 
+    // Get current date as date_published
+    $date_published = date('Y-m-d');
+
     // Insert story into the database
-    $stmt = $conn->prepare("INSERT INTO stories (title, writer, date_published, picture, content) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssss", $title, $writer, $date_published, $picture, $content);
+    $stmt = $conn->prepare("INSERT INTO stories (title, date_published, picture, content) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("ssss", $title, $date_published, $picture, $content);
     $stmt->execute();
     $stmt->close();
 
-    echo "<script>alert('Story uploaded successfully!');</script>";
+    echo "<script>alert('Uploaded successfully!');</script>";
 }
 ?>
 
@@ -143,22 +144,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <header id="main-header">
         <div class="container">
-            <h1>Create New Story</h1>
+            <h1>Create New Post</h1>
         </div>
     </header>
 
     <div class="container">
         <div class="form-wrap">
-            <h1>Upload New Story</h1>
+            <h1>Upload New Post</h1>
             <form action="create_story.php" method="post" enctype="multipart/form-data">
                 <label for="title">Title</label>
                 <input type="text" id="title" name="title" required>
-
-                <label for="writer">Writer</label>
-                <input type="text" id="writer" name="writer" required>
-
-                <label for="date_published">Date Published</label>
-                <input type="date" id="date_published" name="date_published" required>
 
                 <label for="picture">Picture</label>
                 <input type="file" id="picture" name="picture" accept="image/*" required>
@@ -166,13 +161,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="content">Content</label>
                 <textarea id="content" name="content" rows="10" required></textarea>
 
-                <button type="submit">Upload Story</button>
+                <button type="submit">Upload Post</button>
             </form>
         </div>
     </div>
 
     <footer id="main-footer">
-        <p>Create New Story &copy; 2025, All Rights Reserved</p>
+        <p></p>
     </footer>
 </body>
 </html>

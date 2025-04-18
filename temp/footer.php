@@ -18,15 +18,14 @@
                     </div>
                 </div>
                 <div class="footer-section links">
-                    <h2>Quick Links</h2>
+                    <!-- <h2>Quick Links</h2>
                     <br>
                     <ul>
-                        <a href="#"><li>Home</li></a>                        
-                        <a href="#"><li>About</li></a>
-                        <a href="#"><li>Services</li></a>
-                        <a href="#"><li>Request</li></a>
+                        <a href="index.php"><li>Home</li></a>                        
+                        <a href="#"><li>Posts</li></a>
                         <a href="#"><li>Events</li></a>
-                    </ul>
+                        <a href="#"><li>Request</li></a>
+                    </ul> -->
                 </div>
                 <div class="footer-section contact-form">
                     <h2>Contact Us</h2>

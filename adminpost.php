@@ -41,9 +41,9 @@ if (isset($_POST['delete_story'])) {
         $stmt->bind_param("i", $storyId);
         
         if ($stmt->execute()) {
-            $_SESSION['delete_message'] = "Story deleted successfully.";
+            $_SESSION['delete_message'] = "Deleted successfully.";
         } else {
-            $_SESSION['delete_message'] = "Failed to delete the story.";
+            $_SESSION['delete_message'] = "Failed to delete.";
         }
         $stmt->close();
     }
@@ -139,9 +139,14 @@ $stmt->close();
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             position: relative;
+            max-width: 800px; /* Narrow the background */
+            margin-left: auto;
+            margin-right: auto;
         }
         .story img {
             width: 100%;
+            height: 300px; /* Bigger image size */
+            object-fit: contain; /* Ensures the full image is visible, without cropping */
             border-radius: 10px;
         }
         .story h2 {
@@ -163,6 +168,33 @@ $stmt->close();
         }
         .delete-button:hover {
             color: #c0392b;
+        }
+
+        /* Enhanced button styles */
+        .btn {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* Improved typography */
+        .story h2, .story p {
+            font-size: 1.1em;
+        }
+
+        /* Title, Date, and Content labels */
+        .story .label {
+            font-weight: bold;
+            color: #333;
         }
     </style>
     <script>
@@ -200,9 +232,14 @@ $stmt->close();
                     <button type="button" class="delete-button" onclick="confirmDelete(<?php echo $story['id']; ?>)"><i class="fas fa-trash"></i></button>
                 </form>
                 <img src="images/<?php echo htmlspecialchars($story['picture']); ?>" alt="">
+                
+                <p class="label">Title:</p>
                 <h2><?php echo htmlspecialchars($story['title']); ?></h2>
-                <p><strong><?php echo htmlspecialchars($story['writer']); ?></strong></p>
+                
+                <p class="label">Date:</p>
                 <p><em><?php echo htmlspecialchars($story['date_published']); ?></em></p>
+                
+                <p class="label">Content:</p>
                 <p><?php echo htmlspecialchars($story['content']); ?></p>
             </div>
             <?php endforeach; ?>
@@ -210,7 +247,7 @@ $stmt->close();
     </div>
 
     <footer id="main-footer">
-        <p>Admin Post &copy; 2025, All Rights Reserved</p>
+        <p> </p>
     </footer>
 </body>
 </html>

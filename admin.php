@@ -136,65 +136,6 @@ function renderStars($rating) {
         <canvas id="requestsDoughnutChart"></canvas>
     </div>
 
-    <!-- Past Events Table -->
-    <div class="past-events-container">
-        <h3>Past Events</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Event Title</th>
-                    <th>Date and Time</th>
-                    <th>Number of Attendees</th>
-                    <th>Organization</th>
-                    <th>Speaker</th>
-                    <th>Overall</th>
-                    <th>Total (Average)</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                foreach ($pastEventRatings as $event) {
-                    echo "<tr>
-                            <td>" . htmlspecialchars($event['title']) . "</td>
-                            <td>" . htmlspecialchars($event['event_date']) . " " . htmlspecialchars($event['start_time']) . "</td>
-                            <td>" . $event['attendee_count'] . "</td>
-                            <td>" . renderStars($event['organization_avg']) . "</td>
-                            <td>" . renderStars($event['speaker_avg']) . "</td>
-                            <td>" . renderStars($event['overall_avg']) . "</td>
-                            <td>" . renderStars($event['total_avg']) . "</td>
-                            <td><a href='view_event_details.php?event_id=" . $event['id'] . "'>View</a></td>
-                        </tr>";
-                }
-                ?>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Future Events Section -->
-    <div class="future-events-container">
-        <h3>Upcoming Events</h3>
-        <table>
-            <tr>
-                <th>#</th>
-                <th>Event Title</th>
-                <th>Event Date</th>
-                <th>Attendees</th>
-            </tr>
-            <?php
-            $counter = 1;
-            foreach ($futureEvents as $event) {
-                echo "<tr>
-                        <td>" . $counter++ . "</td>
-                        <td>" . htmlspecialchars($event['title']) . "</td>
-                        <td>" . htmlspecialchars($event['event_date']) . "</td>
-                        <td>" . $event['attendee_count'] . "</td>
-                    </tr>";
-            }
-            ?>
-        </table>
-    </div>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
