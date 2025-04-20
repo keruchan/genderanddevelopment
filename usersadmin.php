@@ -3,7 +3,7 @@ include_once('temp/header.php');
 include_once('temp/navigationold.php');
 require 'connecting/connect.php';
 
-// Fetch user data
+// Fetch user data, including profile picture
 $userQuery = $conn->query("SELECT * FROM users");
 $users = $userQuery->fetch_all(MYSQLI_ASSOC);
 
@@ -30,27 +30,28 @@ $groups = $groupQuery->fetch_all(MYSQLI_ASSOC);
                 <th>Last Name</th>
                 <th>First Name</th>
                 <th>Department</th>
-                <th>Username</th>
+                <th>Group</th>
                 <th>Action</th>
             </tr>
         </thead>
         <tbody>
             <?php foreach ($users as $user) : ?>
-                <tr>
+                <tr class="user-row" data-group="<?= htmlspecialchars($user['groupp']) ?>">
                     <td><?= $user['id'] ?></td>
                     <td><?= htmlspecialchars($user['lastname']) ?></td>
                     <td><?= htmlspecialchars($user['firstname']) ?></td>
                     <td><?= htmlspecialchars($user['department']) ?></td>
-                    <td><?= htmlspecialchars($user['username']) ?></td>
+                    <td><?= htmlspecialchars($user['groupp']) ?></td>
                     <td>
                         <button class="action-btn view-btn" onclick='viewUser(<?= json_encode($user) ?>)'>
                             <i class="fas fa-eye"></i>
                         </button>
-                        <a href="edit_user.php?id=<?= $user['id'] ?>">
-                            <button class="action-btn edit-btn">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                        </a>
+                        <a href="admin_userpasswordupdate.php?id=<?= $user['id'] ?>">
+    <button class="action-btn edit-btn">
+        <i class="fas fa-edit"></i>
+    </button>
+</a>
+
                         <a href="delete_user.php?id=<?= $user['id'] ?>" onclick="return confirm('Are you sure?');">
                             <button class="action-btn delete-btn">
                                 <i class="fas fa-trash-alt"></i>
@@ -67,24 +68,30 @@ $groups = $groupQuery->fetch_all(MYSQLI_ASSOC);
 <div id="userModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal()">&times;</span>
-        <h2>User Details</h2>
-        <p><strong>ID:</strong> <span id="modal_id"></span></p>
-        <p><strong>Last Name:</strong> <span id="modal_lastname"></span></p>
-        <p><strong>First Name:</strong> <span id="modal_firstname"></span></p>
-        <p><strong>Age:</strong> <span id="modal_age"></span></p>
-        <p><strong>Email:</strong> <span id="modal_email"></span></p>
-        <p><strong>Contact No.:</strong> <span id="modal_contact"></span></p>
-        <p><strong>Address:</strong> <span id="modal_address"></span></p>
-        <p><strong>Department:</strong> <span id="modal_department"></span></p>
-        <p><strong>Course:</strong> <span id="modal_course"></span></p>
-        <p><strong>Year:</strong> <span id="modal_year"></span></p>
-        <p><strong>Section:</strong> <span id="modal_section"></span></p>
-        <p><strong>Group:</strong> <span id="modal_group"></span></p>
-        <p><strong>Username:</strong> <span id="modal_username"></span></p>
+        <div class="modal-header">
+            <div class="modal-profile">
+                <img id="modal_profilepic" src="" alt="User Profile Picture">
+                <div class="modal-profile-info">
+                    <h1 id="modal_fullname"></h1>
+                    <h2 id="modal_course_department"></h2>
+                    <h3 id="modal_group"></h3>
+                </div>
+            </div>
+        </div>
+        <div class="modal-body">
+            <p><strong>ID:</strong> <span id="modal_id"></span></p>
+            <p><strong>Age:</strong> <span id="modal_age"></span></p>
+            <p><strong>Email:</strong> <span id="modal_email"></span></p>
+            <p><strong>Contact No.:</strong> <span id="modal_contact"></span></p>
+            <p><strong>Address:</strong> <span id="modal_address"></span></p>
+            <p><strong>Year:</strong> <span id="modal_year"></span></p>
+            <p><strong>Username:</strong> <span id="modal_username"></span></p>
+        </div>
     </div>
 </div>
 
 <script>
+    // Search Filter
     document.getElementById('searchBox').addEventListener('input', function () {
         let filter = this.value.toLowerCase();
         let rows = document.querySelectorAll('#usersTable tbody tr');
@@ -94,36 +101,50 @@ $groups = $groupQuery->fetch_all(MYSQLI_ASSOC);
         });
     });
 
+    // Group Filter
     document.getElementById('groupFilter').addEventListener('change', function () {
-        let filter = this.value.toLowerCase();
+        let selectedGroup = this.value.toLowerCase();
         let rows = document.querySelectorAll('#usersTable tbody tr');
+        
         rows.forEach(row => {
-            let group = row.querySelector('.group')?.innerText.toLowerCase();
-            row.style.display = !filter || group === filter ? '' : 'none';
+            let group = row.getAttribute('data-group').toLowerCase();
+            if (!selectedGroup || group === selectedGroup) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
         });
     });
 
+    // Function to view user details in the modal
     function viewUser(user) {
         console.log('viewUser function called with:', user); // Debugging log
-        document.getElementById("modal_id").innerText = user.id;
-        document.getElementById("modal_lastname").innerText = user.lastname;
-        document.getElementById("modal_firstname").innerText = user.firstname;
-        document.getElementById("modal_age").innerText = user.age;
-        document.getElementById("modal_email").innerText = user.email;
-        document.getElementById("modal_contact").innerText = user.contact;
-        document.getElementById("modal_address").innerText = user.address;
-        document.getElementById("modal_department").innerText = user.department;
-        document.getElementById("modal_course").innerText = user.course;
-        document.getElementById("modal_year").innerText = user.yearr;
-        document.getElementById("modal_section").innerText = user.section;
-        document.getElementById("modal_group").innerText = user.groupp;
-        document.getElementById("modal_username").innerText = user.username;
-        
+        document.getElementById("modal_id").innerText = user.id || 'N/A';
+        document.getElementById("modal_age").innerText = user.age || 'N/A';
+        document.getElementById("modal_email").innerText = user.email || 'N/A';
+        document.getElementById("modal_contact").innerText = user.contact || 'N/A';
+        document.getElementById("modal_address").innerText = user.address || 'N/A';
+        document.getElementById("modal_year").innerText = user.yearr || 'N/A';
+        document.getElementById("modal_username").innerText = user.username || 'N/A';
+
+        // Use the full path of the profile picture from the database
+        document.getElementById("modal_profilepic").src = user.profilepic || 'default-profile-pic.jpg';
+
+        // Concatenate last name, first name
+        document.getElementById("modal_fullname").innerText = `${user.lastname || ''}, ${user.firstname || ''}`;
+
+        // Concatenate course and department
+        document.getElementById("modal_course_department").innerText = `${user.course || 'N/A'}, ${user.department || 'N/A'}`;
+
+        // Bind group
+        document.getElementById("modal_group").innerText = `${user.groupp || 'N/A'}`;
+
+        // Show the modal
         let modal = document.getElementById("userModal");
         modal.style.display = "flex";
-        console.log('Modal should now be visible'); // Debugging log
     }
 
+    // Close the modal
     function closeModal() {
         console.log('closeModal function called'); // Debugging log
         document.getElementById("userModal").style.display = "none";
@@ -170,7 +191,7 @@ $groups = $groupQuery->fetch_all(MYSQLI_ASSOC);
     
     /* Modal Styling */
     .modal {
-        display: none; /* Keeps it hidden on page load */
+        display: none;
         position: fixed;
         z-index: 1000;
         left: 0;
@@ -185,9 +206,40 @@ $groups = $groupQuery->fetch_all(MYSQLI_ASSOC);
         background-color: white;
         padding: 20px;
         border-radius: 8px;
-        width: 40%;
+        width: 50%;
         text-align: left;
         position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+    .modal-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .modal-profile {
+        text-align: center;
+    }
+    .modal-profile img {
+        max-width: 250px;
+        max-height: 250px;
+        border-radius: 50%;
+        margin-bottom: 15px;
+    }
+    .modal-profile-info {
+        text-align: center;
+    }
+    .modal-profile-info h1 {
+        font-size: 28px;
+        margin: 10px 0;
+    }
+    .modal-profile-info h2 {
+        font-size: 22px;
+        margin: 8px 0;
+    }
+    .modal-profile-info h3 {
+        font-size: 20px;
+        margin: 8px 0;
     }
     .close {
         position: absolute;

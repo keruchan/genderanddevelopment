@@ -76,7 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <div class="auth-content">
     <form action="request.php" method="post" enctype="multipart/form-data">
-        <h2 class="form-title" style="font-size:50px;">Request Form</h2>
+        <h2 class="form-title" style="font-size:40px;">Request Form</h2>
 
         <?php if (!empty($successMessage)): ?>
             <div class="success"><?= htmlspecialchars($successMessage) ?></div>
@@ -95,6 +95,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <option value="Empowerment">Empowerment</option>
                 <option value="Inclusion">Inclusion</option>
                 <option value="Discrimination">Discrimination</option>
+                <option value="Discrimination">Others</option>
+
             </select>
         </div>
 

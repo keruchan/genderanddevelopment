@@ -3,10 +3,10 @@ session_start();
 require 'connecting/connect.php'; // Ensure correct path
 
 // Fetch requests from the database
-$stmt = $conn->prepare("SELECT id, concern_type, description, status, created_at, attachment, status_updated FROM requests WHERE user_id = ?");
+$stmt = $conn->prepare("SELECT id, concern_type, description, status, created_at, attachment, status_updated, remarks FROM requests WHERE user_id = ? ORDER BY created_at desc");
 $stmt->bind_param("i", $_SESSION['user_id']);
 $stmt->execute();
-$stmt->bind_result($requestId, $concernType, $description, $status, $createdAt, $attachment, $statusUpdated);
+$stmt->bind_result($requestId, $concernType, $description, $status, $createdAt, $attachment, $statusUpdated, $remarks);
 $requests = [];
 while ($stmt->fetch()) {
     $requests[] = [
@@ -16,7 +16,8 @@ while ($stmt->fetch()) {
         'status' => $status,
         'created_at' => $createdAt,
         'attachment' => $attachment,
-        'status_updated' => $statusUpdated
+        'status_updated' => $statusUpdated,
+        'remarks' => $remarks // Add remarks here
     ];
 }
 $stmt->close();
@@ -32,20 +33,23 @@ $resetStmt->close();
 <?php include_once('temp/navigation.php'); ?>
 
 <style>
-    .table-wrapper {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        margin-top: 20px;
-    }
-    .table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-        font-size: 1.2em;
-        text-align: left;
-    }
+.table-wrapper {
+    display: flex;
+    justify-content: center; /* Centers the table horizontally */
+    align-items: center; /* Aligns it vertically, if needed */
+    margin-top: 20px;
+}
+
+.table {
+    width: 80%; /* Adjust this value to control the table's width */
+    border-collapse: collapse;
+    font-size: 1.2em;
+    text-align: left;
+    margin-top: 20px;
+}
+
     .table th, .table td {
+        
         border: 1px solid #ddd;
         padding: 8px;
     }
@@ -53,22 +57,25 @@ $resetStmt->close();
         background-color: #f2f2f2;
     }
     .controls {
+        width: 90%; /* Adjust this value to control the table's width */
+
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
+        margin-bottom: 0px;
     }
     .search-box, .status-filter {
+        left: 120px;
+        position: relative;
         margin-right: 10px;
     }
 </style>
 
 <!-- Page Wrapper -->
 <div class="page-wrapper">
-    <div class="content clearfix">
         <!-- Main Content -->
         <div class="main-content full-width" style="max-width: 100%;">
-            <h1 class="recent-post-title" style="text-align: center;">View Requests</h1>
+            <h1 class="recent-post-title" style="text-align: center; margin: 50px;">View Requests</h1>
             <div class="controls">
                 <div>
                     <input type="text" class="search-box" placeholder="Search...">
@@ -91,6 +98,7 @@ $resetStmt->close();
                             <th>Status</th>
                             <th>Created At</th>
                             <th>Attachment</th>
+                            <th>Remarks</th> <!-- New Column for Remarks -->
                         </tr>
                     </thead>
                     <tbody>
@@ -112,6 +120,7 @@ $resetStmt->close();
                                         No Attachment
                                     <?php endif; ?>
                                 </td>
+                                <td><?php echo htmlspecialchars($request['remarks']); ?></td> <!-- Displaying Remarks -->
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -119,7 +128,6 @@ $resetStmt->close();
             </div>
         </div>
         <!-- //Main Content -->
-    </div>
     <!-- //Content -->
 </div>
 <!-- //Page Wrapper -->
