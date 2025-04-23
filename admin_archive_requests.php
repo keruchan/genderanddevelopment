@@ -201,16 +201,30 @@ $result = $conn->query($query);
     <script>
         // Display request details in the modal
         function showRequestModal(request) {
-            document.getElementById('requestConcernType').innerText = request.concern_type || 'N/A';
-            document.getElementById('requestDescription').innerText = request.description || 'N/A';
-            document.getElementById('requestStatus').innerText = request.status || 'N/A';
-            document.getElementById('requestCreatedAt').innerText = request.created_at || 'N/A';
-            document.getElementById('requestStatusUpdated').innerText = request.status_updated || 'N/A';
-            document.getElementById('requestRemarks').innerText = request.remarks || 'N/A';
-            document.getElementById('requestAttachment').src = request.attachment ? request.attachment : '';
-            document.getElementById('requestModal').style.display = 'block';
-            document.getElementById('modalOverlay').style.display = 'block';
-        }
+    document.getElementById('requestConcernType').innerText = request.concern_type || 'N/A';
+    document.getElementById('requestDescription').innerText = request.description || 'N/A';
+    document.getElementById('requestStatus').innerText = request.status || 'N/A';
+    document.getElementById('requestCreatedAt').innerText = request.created_at || 'N/A';
+    document.getElementById('requestStatusUpdated').innerText = request.status_updated || 'N/A';
+    document.getElementById('requestRemarks').innerText = request.remarks || 'N/A';
+
+    const attachment = request.attachment;
+    const attachmentEl = document.getElementById('requestAttachment');
+
+    if (attachment) {
+        attachmentEl.src = attachment;
+        attachmentEl.alt = "Request Attachment";
+        attachmentEl.style.display = "block";
+    } else {
+        attachmentEl.src = "";
+        attachmentEl.alt = "No Attachment Available";
+        attachmentEl.style.display = "none";
+    }
+
+    document.getElementById('requestModal').style.display = 'block';
+    document.getElementById('modalOverlay').style.display = 'block';
+}
+
 
         // Hide the request modal
         function hideRequestModal() {

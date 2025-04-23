@@ -31,7 +31,7 @@ $result = $conn->query($query);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Archived Data</title>
+    <title>Admin Archived Events</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -93,13 +93,6 @@ $result = $conn->query($query);
         .restore-btn:hover {
             background-color: #c3e6c3;
         }
-        .delete-btn {
-            color: #dc3545;
-            background-color: #f8d7da;
-        }
-        .delete-btn:hover {
-            background-color: #f1b0b7;
-        }
         /* Modal Styling */
         #eventModal {
             display: none;
@@ -126,12 +119,12 @@ $result = $conn->query($query);
             z-index: 999;
         }
         #eventAttachment {
-            width: 50%; /* Set the width to half the current size */
-            height: auto; /* Maintain aspect ratio */
-            max-height: 200px; /* Set a fixed max height */
-            object-fit: contain; /* Ensure the attachment fits within the specified dimensions */
+            width: 50%;
+            height: auto;
+            max-height: 200px;
+            object-fit: contain;
             display: block;
-            margin: 10px auto; /* Center the attachment */
+            margin: 10px auto;
         }
         button {
             background-color: #4285F4;
@@ -199,16 +192,31 @@ $result = $conn->query($query);
 
     <script>
         // Display event details in the modal
-        function showEventModal(event) {
-            document.getElementById('eventTitle').innerText = event.title || 'N/A';
-            document.getElementById('eventDescription').innerText = event.description || 'N/A';
-            document.getElementById('eventDate').innerText = event.event_date || 'N/A';
-            document.getElementById('eventStartTime').innerText = event.start_time || 'N/A';
-            document.getElementById('eventEndTime').innerText = event.end_time || 'N/A';
-            document.getElementById('eventAttachment').src = event.attachment_path ? event.attachment_path : '';
-            document.getElementById('eventModal').style.display = 'block';
-            document.getElementById('modalOverlay').style.display = 'block';
-        }
+function showEventModal(event) {
+    document.getElementById('eventTitle').innerText = event.title || 'N/A';
+    document.getElementById('eventDescription').innerText = event.description || 'N/A';
+    document.getElementById('eventDate').innerText = event.event_date || 'N/A';
+    document.getElementById('eventStartTime').innerText = event.start_time || 'N/A';
+    document.getElementById('eventEndTime').innerText = event.end_time || 'N/A';
+
+    // Handle the attachment path
+    const attachmentPath = event.attachment_path ? 'uploads/' + event.attachment_path : '';
+    const eventAttachment = document.getElementById('eventAttachment');
+
+    if (attachmentPath) {
+        eventAttachment.src = attachmentPath; // Ensure the image is loaded correctly
+        eventAttachment.alt = "Event Attachment";
+        eventAttachment.style.display = "block"; // Show the image
+    } else {
+        eventAttachment.src = '';
+        eventAttachment.alt = "No Attachment Available";
+        eventAttachment.style.display = "none"; // Hide the image if no attachment
+    }
+
+    document.getElementById('eventModal').style.display = 'block';
+    document.getElementById('modalOverlay').style.display = 'block';
+}
+
 
         // Hide the event modal
         function hideEventModal() {
