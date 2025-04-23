@@ -12,7 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $_SESSION['groupp'] = $_POST['groupp'];
 
     if ($_POST['groupp'] == 'PWD') {
-        $_SESSION['impairment'] = $_POST['impairment'];
+        $_SESSION['impairment'] = $_POST['impairment'] . ' - ' . $_POST['other_impairment'];
+
     }
 
     // Store profile picture temporarily in session

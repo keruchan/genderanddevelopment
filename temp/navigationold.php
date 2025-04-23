@@ -50,6 +50,8 @@ if (isset($_SESSION['admin_id'])) {
                     <a href="javascript:void(0);" class="dropbtn"><?= $displayName ?> <i class="fa fa-chevron-down"></i></a>
                     <ul class="dropdown-content">
                         <li><a href="adminupdatepass.php">Update</a></li>
+                        <li><a href="admin_archived_users.php">Archived Users</a></li>
+                        <li><a href="admin_archived_events.php">Archived Events</a></li>
                         <li><a href="connecting/logout.php" onclick="return confirmLogout();">Logout</a></li>
                     </ul>
                 </li>

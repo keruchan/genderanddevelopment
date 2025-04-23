@@ -8,13 +8,43 @@ $perPage = 20;  // Number of requests per page
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;  // Current page (default is 1)
 $start = ($page - 1) * $perPage;  // Start record for the current page
 
-// Fetch requests with user details, ordered by created_at descending, with pagination
-$requestQuery = $conn->prepare("SELECT r.id, u.lastname, u.firstname, r.concern_type, r.created_at, r.description, r.attachment, r.status, r.remarks
+// Fetch the search term, type filter, and status filter from GET
+$searchTerm = isset($_GET['search']) && $_GET['search'] !== '' ? "%" . $_GET['search'] . "%" : "%";
+$typeFilter = isset($_GET['type']) && $_GET['type'] !== '' ? $_GET['type'] : null;
+$statusFilter = isset($_GET['status']) && $_GET['status'] !== '' ? $_GET['status'] : null;
+
+// Modify the query to include search, type, and status filters
+$query = "SELECT r.id, u.lastname, u.firstname, r.concern_type, r.created_at, r.description, r.attachment, r.status, r.remarks
     FROM requests r 
     JOIN users u ON r.user_id = u.id 
-    ORDER BY r.created_at DESC 
-    LIMIT ?, ?");
-$requestQuery->bind_param("ii", $start, $perPage);
+    WHERE (u.lastname LIKE ? OR u.firstname LIKE ? OR r.description LIKE ?)";
+
+if ($typeFilter !== null && $typeFilter !== "") {  // Only add the condition if a valid type is selected
+    $query .= " AND r.concern_type = ?";
+}
+
+if ($statusFilter) {
+    $query .= " AND r.status = ?";
+}
+
+$query .= " ORDER BY r.created_at DESC LIMIT ?, ?";
+
+// Prepare and bind parameters
+$requestQuery = $conn->prepare($query);
+$params = [$searchTerm, $searchTerm, $searchTerm];
+
+if ($typeFilter !== null && $typeFilter !== "") {  // Add the type filter condition if it's valid
+    $params[] = $typeFilter;
+}
+
+if ($statusFilter) {
+    $params[] = $statusFilter;
+}
+
+$params[] = $start;
+$params[] = $perPage;
+
+$requestQuery->bind_param(str_repeat("s", count($params) - 2) . "ii", ...$params);
 $requestQuery->execute();
 $requests = $requestQuery->get_result()->fetch_all(MYSQLI_ASSOC);
 $requestQuery->close();
@@ -32,19 +62,22 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
 <div class="request-management-container">
     <h1>Request Management</h1>
     <div class="filter-container">
-        <input type="text" id="searchBox" placeholder="Search requests...">
+        <input type="text" id="searchBox" placeholder="Search requests..." value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" oninput="updateFilters()">
         <div class="select-filters">
-            <select id="typeFilter">
+            <select id="typeFilter" onchange="updateFilters()">
                 <option value="">All Types</option>
                 <?php foreach ($types as $type) : ?>
-                    <option value="<?= htmlspecialchars($type['concern_type']) ?>"> <?= htmlspecialchars($type['concern_type']) ?> </option>
+                    <option value="<?= htmlspecialchars($type['concern_type']) ?>" 
+                        <?= isset($_GET['type']) && $_GET['type'] === $type['concern_type'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($type['concern_type']) ?>
+                    </option>
                 <?php endforeach; ?>
             </select>
-            <select id="statusFilter">
+            <select id="statusFilter" onchange="updateFilters()">
                 <option value="">All Statuses</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-                <option value="pending">Pending</option>
+                <option value="approved" <?= isset($_GET['status']) && $_GET['status'] === 'approved' ? 'selected' : '' ?>>Approved</option>
+                <option value="rejected" <?= isset($_GET['status']) && $_GET['status'] === 'rejected' ? 'selected' : '' ?>>Rejected</option>
+                <option value="pending" <?= isset($_GET['status']) && $_GET['status'] === 'pending' ? 'selected' : '' ?>>Pending</option>
             </select>
         </div>
     </div>
@@ -53,7 +86,7 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
             <tr>
                 <th>Request No.</th>
                 <th>Full Name</th>
-                <th>Group</th>
+                <th>Concern Type</th>
                 <th>Date</th>
                 <th>Status</th>
                 <th>Action</th>
@@ -83,15 +116,15 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
     <!-- Pagination Controls -->
     <div class="pagination">
         <?php if ($page > 1) : ?>
-            <a href="?page=<?= $page - 1 ?>">Previous</a>
+            <a href="?page=<?= $page - 1 ?>&search=<?= urlencode($_GET['search'] ?? '') ?>&type=<?= urlencode($_GET['type'] ?? '') ?>&status=<?= urlencode($_GET['status'] ?? '') ?>">Previous</a>
         <?php endif; ?>
         
         <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
-            <a href="?page=<?= $i ?>" class="<?= $i == $page ? 'active' : '' ?>"><?= $i ?></a>
+            <a href="?page=<?= $i ?>&search=<?= urlencode($_GET['search'] ?? '') ?>&type=<?= urlencode($_GET['type'] ?? '') ?>&status=<?= urlencode($_GET['status'] ?? '') ?>" class="<?= $i == $page ? 'active' : '' ?>"><?= $i ?></a>
         <?php endfor; ?>
         
         <?php if ($page < $totalPages) : ?>
-            <a href="?page=<?= $page + 1 ?>">Next</a>
+            <a href="?page=<?= $page + 1 ?>&search=<?= urlencode($_GET['search'] ?? '') ?>&type=<?= urlencode($_GET['type'] ?? '') ?>&status=<?= urlencode($_GET['status'] ?? '') ?>">Next</a>
         <?php endif; ?>
     </div>
 </div>
@@ -131,6 +164,20 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
 </div>
 
 <script>
+    // Update filters and reload the table
+    function updateFilters() {
+        const search = encodeURIComponent(document.getElementById('searchBox').value.trim());
+        const type = encodeURIComponent(document.getElementById('typeFilter').value.trim());
+        const status = encodeURIComponent(document.getElementById('statusFilter').value.trim());
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        if (search) urlParams.set('search', search); else urlParams.delete('search');
+        if (type) urlParams.set('type', type); else urlParams.delete('type');
+        if (status) urlParams.set('status', status); else urlParams.delete('status');
+        
+        window.location.search = urlParams.toString();
+    }
+
     let currentRequestId = null;
 
     function viewRequest(request) {
@@ -188,23 +235,25 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
     }
 
     function deleteRequest(requestId) {
-        if (confirm("Are you sure you want to delete this request?")) {
-            fetch("delete_request.php", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: `id=${encodeURIComponent(requestId)}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert("Failed to delete the request.");
-                }
-            })
-            .catch(error => console.error("Error:", error));
-        }
+    if (confirm("Are you sure you want to archive this request?")) {
+        // Send a request to archive and delete the data
+        fetch("archive_and_delete_request.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: `id=${encodeURIComponent(requestId)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload(); // Reload the page to reflect the deletion
+            } else {
+                alert("Failed to archive and delete the request: " + (data.message || "Unknown error."));
+            }
+        })
+        .catch(error => console.error("Error:", error));
     }
+}
 </script>
 
 <style>
@@ -445,6 +494,6 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
     .status.approved { background-color: #d4edda; } /* Green */
     .status.rejected { background-color: #f8d7da; } /* Red */
     .status.pending { background-color: #fff3cd; } /* Yellow */
-    </style>
+</style>
 
 <?php include_once('temp/footeradmin.php'); ?>

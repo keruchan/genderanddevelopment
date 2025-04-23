@@ -152,8 +152,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <option value="Leg Impairment">Leg Impairment</option>
                         <option value="Eye Impairment">Eye Impairment</option>
                         <option value="Arms Impairment">Arms Impairment</option>
+                        <option value="Others">Others (please specify)</option> <!-- Added 'Others' option -->
                     </select>
                     <span class="required-asterisk">*</span>
+                </label>
+            </div>
+            <div id="otherImpairmentDiv" style="display: none;">
+                <label class="required-label">
+                    <input type="text" name="other_impairment" class="text-input" placeholder="Please specify the impairment">
                 </label>
             </div>
             <div>
@@ -192,11 +198,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const inputs = document.querySelectorAll(".text-input");
         const groupSelect = document.getElementById("groupSelect");
         const impairmentDiv = document.getElementById("impairmentDiv");
         const impairmentSelect = document.getElementById("impairmentSelect");
+        const otherImpairmentDiv = document.getElementById("otherImpairmentDiv");
 
+        // Toggle the impairment field visibility when "PWD" is selected
         groupSelect.addEventListener("change", function() {
             if (this.value === "PWD") {
                 impairmentDiv.style.display = "block";
@@ -204,51 +211,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             } else {
                 impairmentDiv.style.display = "none";
                 impairmentSelect.required = false;
+                otherImpairmentDiv.style.display = "none"; // Hide the other impairment textbox
             }
         });
 
-        inputs.forEach(input => {
-            input.addEventListener("input", function() {
-                const asterisk = this.nextElementSibling;
-                if (this.checkValidity()) {
-                    asterisk.style.display = "none";
-                } else {
-                    asterisk.style.display = "inline";
-                }
-            });
+        impairmentSelect.addEventListener("change", function() {
+            if (this.value === "Others") {
+                otherImpairmentDiv.style.display = "block"; // Show the 'Others' textbox
+            } else {
+                otherImpairmentDiv.style.display = "none"; // Hide the textbox when a predefined option is selected
+            }
         });
     });
-
-async function checkEmailExists() {
-    const email = document.querySelector('input[name="email"]').value;
-
-    if (!email) return true; // Allow form submission if no email is entered
-
-    try {
-        const response = await fetch('check_email.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: 'email=' + encodeURIComponent(email)
-        });
-
-        const data = await response.json();
-
-        if (data.status === 'error') {
-            alert(data.message); // Show the message in an alert
-            const emailInput = document.querySelector('input[name="email"]');
-            emailInput.style.border = "2px solid red"; // Highlight the field
-            emailInput.focus();
-            window.location.href = "userup.php"; // Redirect to userup.php
-            return false; // Prevent form submission
-        } else {
-            return true; // Allow form submission
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert("Something went wrong, please try again.");
-        return false; // Prevent submission on error
-    }
-}
 </script>

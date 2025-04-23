@@ -30,18 +30,44 @@ while ($row = $futureEventsQuery->fetch_assoc()) {
     $futureEvents[] = $row;
 }
 
-// Handle event deletion
+// Handle event deletion and archiving
 if (isset($_GET['delete_id'])) {
     $deleteId = $_GET['delete_id'];
-    $deleteQuery = "DELETE FROM events WHERE id = ?";
-    $stmt = $conn->prepare($deleteQuery);
-    $stmt->bind_param("i", $deleteId);
-    if ($stmt->execute()) {
-        echo "<script>alert('Event deleted successfully!'); window.location.href='admin_eventlists.php';</script>";
+
+    // Fetch event data first
+    $eventQuery = $conn->prepare("SELECT * FROM events WHERE id = ?");
+    $eventQuery->bind_param("i", $deleteId);
+    $eventQuery->execute();
+    $eventResult = $eventQuery->get_result();
+
+    if ($eventResult->num_rows > 0) {
+        $eventData = $eventResult->fetch_assoc();
+
+        // Archive event
+        $archiveQuery = $conn->prepare("INSERT INTO admin_archived_events (id, title, description, event_date, start_time, end_time, attachment_path) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $archiveQuery->bind_param("issssss",
+            $eventData['id'],
+            $eventData['title'],
+            $eventData['description'],
+            $eventData['event_date'],
+            $eventData['start_time'],
+            $eventData['end_time'],
+            $eventData['attachment_path']
+        );
+
+        if ($archiveQuery->execute()) {
+            // Delete from events table
+            $deleteQuery = $conn->prepare("DELETE FROM events WHERE id = ?");
+            $deleteQuery->bind_param("i", $deleteId);
+            $deleteQuery->execute();
+
+            echo "<script>alert('Event archived and deleted successfully!'); window.location.href='admin_eventlists.php';</script>";
+        } else {
+            echo "<script>alert('Failed to archive event.'); window.location.href='admin_eventlists.php';</script>";
+        }
     } else {
-        echo "<script>alert('Failed to delete event.'); window.location.href='admin_eventlists.php';</script>";
+        echo "<script>alert('Event not found.'); window.location.href='admin_eventlists.php';</script>";
     }
-    $stmt->close();
 }
 ?>
 
@@ -150,6 +176,14 @@ if (isset($_GET['delete_id'])) {
             padding: 0;
             text-align: center;
         }
+
+        /* Updated image size for modal */
+        #eventImage {
+            width: 50%; /* 50% of the original size */
+            height: auto; /* Maintain aspect ratio */
+            object-fit: contain;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -181,7 +215,7 @@ if (isset($_GET['delete_id'])) {
                             <td><?php echo htmlspecialchars($event['event_date']); ?></td>
                             <td><?php echo $event['attendee_count']; ?></td>
                             <td>
-                                <a href="javascript:void(0);" class="action-btn" onclick='showEventModal("<?php echo addslashes($event['title']); ?>", "<?php echo addslashes($event['description']); ?>", "attachments/<?php echo $event['attachment_path']; ?>", "<?php echo $event['start_time']; ?>", "<?php echo $event['end_time']; ?>")'>
+                                <a href="javascript:void(0);" class="action-btn" onclick='showEventModal(<?php echo json_encode($event); ?>)'>
                                     <i class="fa fa-eye"></i> <!-- View Icon -->
                                 </a>
                                 <a href="admin_eventlists.php?delete_id=<?php echo $event['id']; ?>" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this event?');">
@@ -244,12 +278,12 @@ if (isset($_GET['delete_id'])) {
     }
 
     // Event Modal Script
-    function showEventModal(title, description, image, startTime, endTime) {
-        document.getElementById('eventTitle').innerText = title;
-        document.getElementById('eventDescription').innerText = description;
-        document.getElementById('eventImage').src = image;
-        document.getElementById('eventStartTime').innerText = startTime;
-        document.getElementById('eventEndTime').innerText = endTime;
+    function showEventModal(event) {
+        document.getElementById('eventTitle').innerText = event.title;
+        document.getElementById('eventDescription').innerText = event.description;
+        document.getElementById('eventImage').src = "attachments/" + event.attachment_path;
+        document.getElementById('eventStartTime').innerText = event.start_time;
+        document.getElementById('eventEndTime').innerText = event.end_time;
         document.getElementById('eventModal').style.display = 'block';
         document.getElementById('modalOverlay').style.display = 'block';
     }
@@ -279,7 +313,7 @@ function renderStars($rating) {
 <div id="eventModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 1000;">
     <h2 id="eventTitle"></h2>   
     <p id="eventDescription"></p>
-    <img id="eventImage" src="" style="width: 100%; height: auto; object-fit: contain; margin-top: 10px;" />
+    <img id="eventImage" src="" style="width: 50%; height: auto; object-fit: contain; margin-top: 10px;" />
     <p><strong>Start:</strong> <span id="eventStartTime"></span></p>
     <p><strong>End:</strong> <span id="eventEndTime"></span></p>
     <button onclick="hideEventModal()" style="background-color: #4285F4; color: #fff; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Close</button>
