@@ -52,7 +52,7 @@ $groups = $groupQuery->fetch_all(MYSQLI_ASSOC);
     </button>
 </a>
 
-                        <a href="delete_user.php?id=<?= $user['id'] ?>" onclick="return confirm('Are you sure?');">
+                        <a href="delete_user.php?id=<?= $user['id'] ?>" onclick="return confirm('Are you sure you want to archive user?');">
                             <button class="action-btn delete-btn">
                                 <i class="fas fa-trash-alt"></i>
                             </button>

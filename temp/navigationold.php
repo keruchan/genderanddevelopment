@@ -51,7 +51,8 @@ if (isset($_SESSION['admin_id'])) {
                     <ul class="dropdown-content">
                         <li><a href="adminupdatepass.php">Update</a></li>
                         <li><a href="admin_archived_users.php">Archived Users</a></li>
-                        <li><a href="admin_archived_events.php">Archived Events</a></li>
+                        <li><a href="admin_archive.php">Archived Events</a></li>
+                        <li><a href="admin_archive_requests.php">Archived Requests</a></li>
                         <li><a href="connecting/logout.php" onclick="return confirmLogout();">Logout</a></li>
                     </ul>
                 </li>

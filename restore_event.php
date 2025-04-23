@@ -4,55 +4,50 @@ require 'connecting/connect.php';
 
 // Check if admin is logged in
 if (!isset($_SESSION['admin_id'])) {
-    echo "<script>alert('Please log in to access this page.'); window.location.href = 'admin_login.php';</script>";
+    echo json_encode(['success' => false, 'message' => 'Unauthorized access. Please log in as admin.']);
     exit();
 }
 
-// Get the event ID from the URL
-$event_id = isset($_GET['id']) ? $_GET['id'] : null;
+// Get the event ID from the request
+$event_id = isset($_POST['id']) ? intval($_POST['id']) : null;
 
 if ($event_id) {
-    // Step 1: Fetch the archived event data
-    $eventQuery = $conn->prepare("SELECT * FROM admin_archived_events WHERE id = ?");
-    $eventQuery->bind_param("i", $event_id);
-    $eventQuery->execute();
-    $eventResult = $eventQuery->get_result();
+    // Fetch the archived event data
+    $query = $conn->prepare("SELECT * FROM admin_archived_events WHERE id = ?");
+    $query->bind_param("i", $event_id);
+    $query->execute();
+    $result = $query->get_result();
 
-    if ($eventResult->num_rows > 0) {
-        // Step 2: Move event data to the events table
-        $eventData = $eventResult->fetch_assoc();
-        $insertQuery = $conn->prepare("INSERT INTO events (id, title, description, event_date, attachment_path, attendees, start_time, end_time)
-                                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    if ($result->num_rows > 0) {
+        $event = $result->fetch_assoc();
 
-        $insertQuery->bind_param("issssiss",
-            $eventData['id'],
-            $eventData['title'],
-            $eventData['description'],
-            $eventData['event_date'],
-            $eventData['attachment_path'],
-            $eventData['attendees'],
-            $eventData['start_time'],
-            $eventData['end_time']
+        // Move the event back to the events table
+        $restoreQuery = $conn->prepare("INSERT INTO events (id, title, description, event_date, start_time, end_time, attachment_path)
+                                        VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $restoreQuery->bind_param("issssss",
+            $event['id'],
+            $event['title'],
+            $event['description'],
+            $event['event_date'],
+            $event['start_time'],
+            $event['end_time'],
+            $event['attachment_path']
         );
 
-        if ($insertQuery->execute()) {
-            // Step 3: Delete the event from the admin_archived_events table after restoring it
+        if ($restoreQuery->execute()) {
+            // Delete the event from the archive table
             $deleteQuery = $conn->prepare("DELETE FROM admin_archived_events WHERE id = ?");
             $deleteQuery->bind_param("i", $event_id);
             $deleteQuery->execute();
 
-            // Return a success message as JSON response
             echo json_encode(['success' => true, 'message' => 'Event restored successfully.']);
         } else {
-            // Return an error message as JSON response
-            echo json_encode(['success' => false, 'message' => 'Failed to restore event.']);
+            echo json_encode(['success' => false, 'message' => 'Failed to restore the event.']);
         }
     } else {
-        // Return an error message as JSON response
-        echo json_encode(['success' => false, 'message' => 'Event not found.']);
+        echo json_encode(['success' => false, 'message' => 'Event not found in the archive.']);
     }
 } else {
-    // Return an error message if no event ID is provided
     echo json_encode(['success' => false, 'message' => 'No event ID provided.']);
 }
 

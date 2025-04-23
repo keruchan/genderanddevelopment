@@ -9,18 +9,18 @@ if (!isset($_SESSION['admin_id'])) {
 }
 
 // Get the filter type (either 'events' or 'requests')
-$type = isset($_GET['type']) ? $_GET['type'] : 'events'; // Default to 'events'
+$type = isset($_GET['type']) ? $_GET['type'] : 'requests'; // Default to 'requests'
 
 // Initialize the query based on the filter type
-if ($type == 'events') {
-    // Query for archived events
-    $query = "SELECT * FROM admin_archived_events ORDER BY event_date DESC";
-} elseif ($type == 'requests') {
+if ($type == 'requests') {
     // Query for archived requests
     $query = "SELECT * FROM admin_archived_requests ORDER BY created_at DESC";
-} else {
-    // Default to 'events' if the type is not recognized
+} elseif ($type == 'events') {
+    // Query for archived events
     $query = "SELECT * FROM admin_archived_events ORDER BY event_date DESC";
+} else {
+    // Default to 'requests' if the type is not recognized
+    $query = "SELECT * FROM admin_archived_requests ORDER BY created_at DESC";
 }
 
 $result = $conn->query($query);
@@ -101,7 +101,7 @@ $result = $conn->query($query);
             background-color: #f1b0b7;
         }
         /* Modal Styling */
-        #eventModal {
+        #requestModal {
             display: none;
             position: fixed;
             top: 50%;
@@ -125,7 +125,7 @@ $result = $conn->query($query);
             background-color: rgba(0, 0, 0, 0.5);
             z-index: 999;
         }
-        #eventAttachment {
+        #requestAttachment {
             width: 50%; /* Set the width to half the current size */
             height: auto; /* Maintain aspect ratio */
             max-height: 200px; /* Set a fixed max height */
@@ -148,28 +148,28 @@ $result = $conn->query($query);
     <?php include_once('temp/navigationold.php'); ?>
     
     <div class="container">
-        <h2 style="font-size:40px; margin-bottom: 20px;">Archived Events</h2>
+        <h2 style="font-size:40px; margin-bottom: 20px;">Archived Requests</h2>
 
-        <!-- Table displaying archived events -->
+        <!-- Table displaying archived requests -->
         <table>
             <tr>
                 <th>#</th>
-                <th>Event Title</th>
+                <th>Concern Type</th>
                 <th>Description</th>
-                <th>Date</th>
+                <th>Status</th>
                 <th>Actions</th>
             </tr>
             <?php
                 if ($result->num_rows > 0) {
                     $counter = 1;
                     while ($row = $result->fetch_assoc()) {
-                        echo "<tr id='event-row-" . $row['id'] . "'>";
+                        echo "<tr id='request-row-" . $row['id'] . "'>";
                         echo "<td>" . $counter++ . "</td>";
-                        echo "<td>" . htmlspecialchars($row['title']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['concern_type']) . "</td>";
                         echo "<td>" . htmlspecialchars($row['description']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['event_date']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['status']) . "</td>";
                         echo "<td>
-                            <button class='action-btn view-btn' onclick='showEventModal(" . json_encode($row) . ")'>
+                            <button class='action-btn view-btn' onclick='showRequestModal(" . json_encode($row) . ")'>
                                 <i class='fa fa-eye'></i>
                             </button>
                             <button class='action-btn restore-btn' onclick='restoreRecord(" . $row['id'] . ")'>
@@ -179,47 +179,49 @@ $result = $conn->query($query);
                         echo "</tr>";
                     }
                 } else {
-                    echo "<tr><td colspan='5' class='no-data-msg'>No archived events found.</td></tr>";
+                    echo "<tr><td colspan='5' class='no-data-msg'>No archived requests found.</td></tr>";
                 }
             ?>
         </table>
     </div>
 
-    <!-- Event Modal -->
-    <div id="modalOverlay" onclick="hideEventModal()"></div>
-    <div id="eventModal">
-        <h2 id="eventTitle"></h2>
-        <p id="eventDescription"></p>
-        <img id="eventAttachment" src="" alt="Event Attachment">
-        <p><strong>Date:</strong> <span id="eventDate"></span></p>
-        <p><strong>Start:</strong> <span id="eventStartTime"></span></p>
-        <p><strong>End:</strong> <span id="eventEndTime"></span></p>
-        <button onclick="hideEventModal()">Close</button>
+    <!-- Request Modal -->
+    <div id="modalOverlay" onclick="hideRequestModal()"></div>
+    <div id="requestModal">
+        <h2 id="requestConcernType"></h2>
+        <p id="requestDescription"></p>
+        <img id="requestAttachment" src="" alt="Request Attachment">
+        <p><strong>Status:</strong> <span id="requestStatus"></span></p>
+        <p><strong>Created At:</strong> <span id="requestCreatedAt"></span></p>
+        <p><strong>Status Updated:</strong> <span id="requestStatusUpdated"></span></p>
+        <p><strong>Remarks:</strong> <span id="requestRemarks"></span></p>
+        <button onclick="hideRequestModal()">Close</button>
     </div>
 
     <script>
-        // Display event details in the modal
-        function showEventModal(event) {
-            document.getElementById('eventTitle').innerText = event.title || 'N/A';
-            document.getElementById('eventDescription').innerText = event.description || 'N/A';
-            document.getElementById('eventDate').innerText = event.event_date || 'N/A';
-            document.getElementById('eventStartTime').innerText = event.start_time || 'N/A';
-            document.getElementById('eventEndTime').innerText = event.end_time || 'N/A';
-            document.getElementById('eventAttachment').src = event.attachment_path ? event.attachment_path : '';
-            document.getElementById('eventModal').style.display = 'block';
+        // Display request details in the modal
+        function showRequestModal(request) {
+            document.getElementById('requestConcernType').innerText = request.concern_type || 'N/A';
+            document.getElementById('requestDescription').innerText = request.description || 'N/A';
+            document.getElementById('requestStatus').innerText = request.status || 'N/A';
+            document.getElementById('requestCreatedAt').innerText = request.created_at || 'N/A';
+            document.getElementById('requestStatusUpdated').innerText = request.status_updated || 'N/A';
+            document.getElementById('requestRemarks').innerText = request.remarks || 'N/A';
+            document.getElementById('requestAttachment').src = request.attachment ? request.attachment : '';
+            document.getElementById('requestModal').style.display = 'block';
             document.getElementById('modalOverlay').style.display = 'block';
         }
 
-        // Hide the event modal
-        function hideEventModal() {
-            document.getElementById('eventModal').style.display = 'none';
+        // Hide the request modal
+        function hideRequestModal() {
+            document.getElementById('requestModal').style.display = 'none';
             document.getElementById('modalOverlay').style.display = 'none';
         }
 
         // Restore function
         function restoreRecord(id) {
-            if (confirm("Are you sure you want to restore this event?")) {
-                fetch("restore_event.php", {
+            if (confirm("Are you sure you want to restore this request?")) {
+                fetch("restore_request.php", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded",
@@ -231,16 +233,16 @@ $result = $conn->query($query);
                         if (data.success) {
                             alert(data.message);
 
-                            // Remove the restored event row from the table
-                            const row = document.querySelector(`#event-row-${id}`);
+                            // Remove the restored request row from the table
+                            const row = document.querySelector(`#request-row-${id}`);
                             if (row) row.remove();
                         } else {
                             alert(data.message);
                         }
                     })
                     .catch((error) => {
-                        console.error("Error restoring event:", error);
-                        alert("Failed to restore the event. Please try again.");
+                        console.error("Error restoring request:", error);
+                        alert("Failed to restore the request. Please try again.");
                     });
             }
         }
