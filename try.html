@@ -1,63 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Registration</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notification Navbar</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h2>Register Here</h2>
-    <form action="register.php" method="post" enctype="multipart/form-data">
-        <label>Last Name:</label>
-        <input type="text" name="lastname" required><br>
+<body class="bg-gray-100">
+  <!-- Navigation Bar -->
+  <nav class="bg-white shadow p-4 flex justify-between items-center">
+    <div class="text-2xl font-bold">MyApp</div>
+    <div class="relative">
+      <!-- Notification Icon -->
+      <button class="relative focus:outline-none">
+        <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+        </svg>
+        <!-- Notification Badge -->
+        <span class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+      </button>
+    </div>
+  </nav>
 
-        <label>First Name:</label>
-        <input type="text" name="firstname" required><br>
-
-        <label>Age:</label>
-        <input type="number" name="age" required><br>
-
-        <label>Email:</label>
-        <input type="email" name="email" required><br>
-
-        <label>Contact:</label>
-        <input type="text" name="contact" required><br>
-
-        <label>Address:</label>
-        <textarea name="address" required></textarea><br>
-
-        <label>Department:</label>
-        <input type="text" name="department" required><br>
-
-        <label>Course:</label>
-        <input type="text" name="course" required><br>
-
-        <label>Year:</label>
-        <input type="text" name="yearr" required><br>
-
-        <label>Section:</label>
-        <input type="text" name="section" required><br>
-
-        <label>Group:</label>
-        <input type="text" name="groupp" required><br>
-
-        <label>Username:</label>
-        <input type="text" name="username" required><br>
-
-        <label>Password:</label>
-        <input type="password" name="password" required><br>
-
-        <label>Gender:</label>
-        <select name="gender" required>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-        </select><br>
-
-        <label>Profile Picture:</label>
-        <input type="file" name="profilepic"><br>
-
-        <input type="submit" name="register" value="Register">
-    </form>
+  <main class="p-6">
+    <h1 class="text-3xl font-semibold">Welcome to MyApp</h1>
+    <p class="mt-4 text-gray-700">You have new notifications!</p>
+  </main>
 </body>
 </html>

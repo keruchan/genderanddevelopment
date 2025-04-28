@@ -164,7 +164,7 @@ session_start();
                 require 'connecting/connect.php';
                 $query = "SELECT e.id, e.title, e.event_date, e.description, 
                                  (SELECT COUNT(*) FROM event_attendance ea WHERE ea.event_id = e.id) AS attendee_count 
-                          FROM events e ORDER BY e.event_date DESC LIMIT 5";
+                          FROM events e ORDER BY e.event_date ASC";
                 $result = $conn->query($query);
                 while ($event = $result->fetch_assoc()) {
                     echo "<div class='event-card'>",
