@@ -13,7 +13,7 @@ $groups = $groupQuery->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <div class="user-management-container">
-    <h1>User Management</h1>
+    <h1 style="font-size: 22px;">User Management</h1>
     <div class="filter-container">
         <input type="text" id="searchBox" placeholder="Search users...">
         <select id="groupFilter">

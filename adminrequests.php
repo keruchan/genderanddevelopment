@@ -60,7 +60,7 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <div class="request-management-container">
-    <h1>Request Management</h1>
+    <h1 style="font-size: 22px;">Request Management</h1>
     <div class="filter-container">
         <input type="text" id="searchBox" placeholder="Search requests..." value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" oninput="updateFilters()">
         <div class="select-filters">
