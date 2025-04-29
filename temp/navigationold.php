@@ -35,7 +35,7 @@ if (isset($_SESSION['admin_id'])) {
     $stmt->close();
 
     // Fetching notifications
-    $stmt = $conn->prepare("SELECT id, title, message, type, created_at, is_read FROM admin_notification ORDER BY created_at DESC LIMIT 5");
+    $stmt = $conn->prepare("SELECT id, title, message, type, created_at, is_read FROM admin_notification ORDER BY created_at DESC");
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
@@ -93,7 +93,7 @@ if (isset($_SESSION['admin_id'])) {
                                 </li>
                             <?php endforeach; ?>
                             <li style="text-align:center;">
-                                <button id="loadMoreBtn" style="background:none; border:none; color:blue; cursor:pointer; padding:10px;">More...</button>
+                                <button id="loadMoreBtn" style="background:none; border:none; color:blue; cursor:pointer; padding:10px;"></button>
                             </li>
                         <?php else: ?>
                             <li><a href="#">No new notifications</a></li>
@@ -184,7 +184,7 @@ if (isset($_SESSION['admin_id'])) {
                 const notifElem = e.target.closest('.notif-link');
                 const notifId = notifElem.getAttribute('data-id');
 
-                fetch('admin_mark_single_notifications_read.php', {
+                fetch('admin_mark_single_notification_read.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
