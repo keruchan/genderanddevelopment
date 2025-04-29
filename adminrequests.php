@@ -105,7 +105,7 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
                             <i class="fa fa-eye"></i>
                         </button>
                         <button class="delete-btn" onclick="deleteRequest(<?= $request['id'] ?>)">
-                            <i class="fa fa-trash"></i>
+                            <i class="fa fa-archive"></i>
                         </button>
                     </td>
                 </tr>

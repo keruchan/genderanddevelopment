@@ -218,8 +218,8 @@ if (isset($_GET['delete_id'])) {
                                 <a href="javascript:void(0);" class="action-btn" onclick='showEventModal(<?php echo json_encode($event); ?>)'>
                                     <i class="fa fa-eye"></i> <!-- View Icon -->
                                 </a>
-                                <a href="admin_eventlists.php?delete_id=<?php echo $event['id']; ?>" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this event?');">
-                                    <i class="fa fa-trash"></i> <!-- Delete Icon -->
+                                <a href="admin_eventlists.php?delete_id=<?php echo $event['id']; ?>" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to archive this event?');">
+                                <i class="fa fa-archive"></i> <!-- Archive Icon -->
                                 </a>
                             </td>
                         </tr>

@@ -1,45 +1,96 @@
 <?php
 session_start();
-require 'connecting/connect.php';
+require 'connecting/connect.php'; // Ensure correct path
 
-// Check if admin is logged in
-if (!isset($_SESSION['admin_id'])) {
-    echo "<script>alert('Please log in to access this page.'); window.location.href = 'admin_login.php';</script>";
-    exit();
+// Fetch archived requests
+$archivedRequestsQuery = $conn->query("SELECT * FROM admin_archived_requests ORDER BY created_at DESC");
+$archivedRequests = [];
+while ($row = $archivedRequestsQuery->fetch_assoc()) {
+    $archivedRequests[] = $row;
 }
-$query = "SELECT * FROM admin_archived_requests ORDER BY created_at DESC";
 
+// Handle request restoration
+if (isset($_GET['restore_request_id'])) {
+    $requestId = $_GET['restore_request_id'];
 
-$result = $conn->query($query);
+    // Fetch request data from archived requests table
+    $requestQuery = $conn->prepare("SELECT * FROM admin_archived_requests WHERE id = ?");
+    $requestQuery->bind_param("i", $requestId);
+    $requestQuery->execute();
+    $requestResult = $requestQuery->get_result();
+
+    if ($requestResult->num_rows > 0) {
+        $requestData = $requestResult->fetch_assoc();
+
+        // Insert data back into the main requests table
+        $restoreQuery = $conn->prepare("INSERT INTO requests (id, user_id, concern_type, description, attachment, created_at, status, status_updated, remarks) 
+                                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $restoreQuery->bind_param("iisssssss", 
+            $requestData['id'],
+            $requestData['user_id'],
+            $requestData['concern_type'],
+            $requestData['description'],
+            $requestData['attachment'],
+            $requestData['created_at'],
+            $requestData['status'],
+            $requestData['status_updated'],
+            $requestData['remarks']
+        );
+
+        if ($restoreQuery->execute()) {
+            // Delete from archived requests table
+            $deleteQuery = $conn->prepare("DELETE FROM admin_archived_requests WHERE id = ?");
+            $deleteQuery->bind_param("i", $requestId);
+            $deleteQuery->execute();
+
+            echo "<script>alert('Request restored successfully!'); window.location.href='admin_archived_requests.php';</script>";
+        } else {
+            echo "<script>alert('Failed to restore request.'); window.location.href='admin_archived_requests.php';</script>";
+        }
+    } else {
+        echo "<script>alert('Request not found in archived table.'); window.location.href='admin_archived_requests.php';</script>";
+    }
+}
+
+// Handle request deletion
+if (isset($_GET['delete_id'])) {
+    $deleteId = $_GET['delete_id'];
+
+    // Delete from archived requests table
+    $deleteQuery = $conn->prepare("DELETE FROM admin_archived_requests WHERE id = ?");
+    $deleteQuery->bind_param("i", $deleteId);
+    if ($deleteQuery->execute()) {
+        echo "<script>alert('Request deleted permanently!'); window.location.href='admin_archived_requests.php';</script>";
+    } else {
+        echo "<script>alert('Failed to delete request.'); window.location.href='admin_archived_requests.php';</script>";
+    }
+}
 ?>
+
+<?php include_once('temp/header.php'); ?>
+<?php include_once('temp/navigationold.php'); ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Archived Data</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Admin - Archived Requests</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 40px;
-            background-color: #f8f9fa;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
         }
         .container {
-            max-width: 1200px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            margin: 0 auto;
+            overflow: hidden;
         }
         h2 {
             text-align: center;
-            color: #007bff;
-            margin-bottom: 30px;
+            margin-top: 20px;
         }
         table {
             width: 100%;
@@ -47,210 +98,101 @@ $result = $conn->query($query);
             margin-top: 20px;
         }
         th, td {
-            border: 1px solid #ddd;
             padding: 12px;
+            border: 1px solid #ddd;
             text-align: center;
-            vertical-align: middle;
         }
         th {
-            background-color: #007bff;
-            color: white;
+            background-color: #f2f2f2;
         }
         .action-btn {
-            background: none;
-            border: none;
+            background-color: transparent;
+            color: #0779e4;
+            padding: 5px;
+            text-decoration: none;
+            border-radius: 50%;
             cursor: pointer;
             font-size: 18px;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 5px;
-            transition: background-color 0.3s ease;
         }
-        .view-btn {
-            color: #007bff;
-            background-color: #e7f3fe;
-        }
-        .view-btn:hover {
-            background-color: #c6e3f8;
-        }
-        .restore-btn {
-            color: #28a745;
-            background-color: #e6f7e6;
-        }
-        .restore-btn:hover {
-            background-color: #c3e6c3;
+        .action-btn:hover {
+            background-color: #f0f0f0;
         }
         .delete-btn {
-            color: #dc3545;
-            background-color: #f8d7da;
+            color: red;
         }
         .delete-btn:hover {
-            background-color: #f1b0b7;
-        }
-        /* Modal Styling */
-        #requestModal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            width: 50%;
-            text-align: left;
-        }
-        #modalOverlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-        }
-        #requestAttachment {
-            width: 50%; /* Set the width to half the current size */
-            height: auto; /* Maintain aspect ratio */
-            max-height: 200px; /* Set a fixed max height */
-            object-fit: contain; /* Ensure the attachment fits within the specified dimensions */
-            display: block;
-            margin: 10px auto; /* Center the attachment */
-        }
-        button {
-            background-color: #4285F4;
-            color: #fff;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+            background-color: #f8d7da;
         }
     </style>
 </head>
 <body>
-    <?php include_once('temp/header.php'); ?>
-    <?php include_once('temp/navigationold.php'); ?>
-    
-    <div class="container">
-        <h2 style="font-size:40px; margin-bottom: 20px;">Archived Requests</h2>
 
-        <!-- Table displaying archived requests -->
+    <div class="container">
+        <h2>Archived Requests</h2>
+
         <table>
-            <tr>
-                <th>#</th>
-                <th>Concern Type</th>
-                <th>Description</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-            <?php
-                if ($result->num_rows > 0) {
-                    $counter = 1;
-                    while ($row = $result->fetch_assoc()) {
-                        echo "<tr id='request-row-" . $row['id'] . "'>";
-                        echo "<td>" . $counter++ . "</td>";
-                        echo "<td>" . htmlspecialchars($row['concern_type']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['description']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['status']) . "</td>";
-                        echo "<td>
-                            <button class='action-btn view-btn' onclick='showRequestModal(" . json_encode($row) . ")'>
-                                <i class='fa fa-eye'></i>
-                            </button>
-                            <button class='action-btn restore-btn' onclick='restoreRecord(" . $row['id'] . ")'>
-                                <i class='fa fa-undo'></i>
-                            </button>
-                        </td>";
-                        echo "</tr>";
-                    }
-                } else {
-                    echo "<tr><td colspan='5' class='no-data-msg'>No archived requests found.</td></tr>";
-                }
-            ?>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Concern Type</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Created At</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php $counter = 1; ?>
+                <?php foreach ($archivedRequests as $request): ?>
+                    <tr>
+                        <td><?php echo $counter++; ?></td>
+                        <td><?php echo htmlspecialchars($request['concern_type']); ?></td>
+                        <td><?php echo htmlspecialchars($request['description']); ?></td>
+                        <td><?php echo htmlspecialchars($request['status']); ?></td>
+                        <td><?php echo htmlspecialchars($request['created_at']); ?></td>
+                        <td>
+                            <a href="javascript:void(0);" class="action-btn" onclick='showRequestModal(<?php echo json_encode($request); ?>)'>
+                                <i class="fa fa-eye"></i> <!-- View Icon -->
+                            </a>
+                            <a href="admin_archived_requests.php?restore_request_id=<?php echo $request['id']; ?>" class="action-btn">
+                                <i class="fa fa-refresh"></i> <!-- Restore Icon -->
+                            </a>
+                            <a href="admin_archived_requests.php?delete_id=<?php echo $request['id']; ?>" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this request permanently?');">
+                                <i class="fa fa-trash"></i> <!-- Delete Icon -->
+                            </a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
         </table>
     </div>
 
     <!-- Request Modal -->
-    <div id="modalOverlay" onclick="hideRequestModal()"></div>
-    <div id="requestModal">
+    <div id="requestModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 1000;">
         <h2 id="requestConcernType"></h2>
         <p id="requestDescription"></p>
-        <img id="requestAttachment" src="" alt="Request Attachment">
         <p><strong>Status:</strong> <span id="requestStatus"></span></p>
         <p><strong>Created At:</strong> <span id="requestCreatedAt"></span></p>
-        <p><strong>Status Updated:</strong> <span id="requestStatusUpdated"></span></p>
         <p><strong>Remarks:</strong> <span id="requestRemarks"></span></p>
-        <button onclick="hideRequestModal()">Close</button>
+        <button onclick="hideRequestModal()" style="background-color: #4285F4; color: #fff; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Close</button>
     </div>
+    <div id="modalOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 999;" onclick="hideRequestModal()"></div>
 
     <script>
-        // Display request details in the modal
         function showRequestModal(request) {
-    document.getElementById('requestConcernType').innerText = request.concern_type || 'N/A';
-    document.getElementById('requestDescription').innerText = request.description || 'N/A';
-    document.getElementById('requestStatus').innerText = request.status || 'N/A';
-    document.getElementById('requestCreatedAt').innerText = request.created_at || 'N/A';
-    document.getElementById('requestStatusUpdated').innerText = request.status_updated || 'N/A';
-    document.getElementById('requestRemarks').innerText = request.remarks || 'N/A';
+            document.getElementById('requestConcernType').innerText = request.concern_type;
+            document.getElementById('requestDescription').innerText = request.description;
+            document.getElementById('requestStatus').innerText = request.status;
+            document.getElementById('requestCreatedAt').innerText = request.created_at;
+            document.getElementById('requestRemarks').innerText = request.remarks || 'None';
+            document.getElementById('requestModal').style.display = 'block';
+            document.getElementById('modalOverlay').style.display = 'block';
+        }
 
-    const attachment = request.attachment;
-    const attachmentEl = document.getElementById('requestAttachment');
-
-    if (attachment) {
-        attachmentEl.src = attachment;
-        attachmentEl.alt = "Request Attachment";
-        attachmentEl.style.display = "block";
-    } else {
-        attachmentEl.src = "";
-        attachmentEl.alt = "No Attachment Available";
-        attachmentEl.style.display = "none";
-    }
-
-    document.getElementById('requestModal').style.display = 'block';
-    document.getElementById('modalOverlay').style.display = 'block';
-}
-
-
-        // Hide the request modal
         function hideRequestModal() {
             document.getElementById('requestModal').style.display = 'none';
             document.getElementById('modalOverlay').style.display = 'none';
         }
-
-        // Restore function
-        function restoreRecord(id) {
-            if (confirm("Are you sure you want to restore this request?")) {
-                fetch("restore_request.php", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    },
-                    body: `id=${id}`,
-                })
-                    .then((response) => response.json())
-                    .then((data) => {
-                        if (data.success) {
-                            alert(data.message);
-
-                            // Remove the restored request row from the table
-                            const row = document.querySelector(`#request-row-${id}`);
-                            if (row) row.remove();
-                        } else {
-                            alert(data.message);
-                        }
-                    })
-                    .catch((error) => {
-                        console.error("Error restoring request:", error);
-                        alert("Failed to restore the request. Please try again.");
-                    });
-            }
-        }
     </script>
 </body>
 </html>
-
-<?php
-$conn->close();
-?>
