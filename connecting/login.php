@@ -8,10 +8,9 @@ if (isset($_POST["login-btn"])) {
     $username = trim($_POST["username"]);
     $password = trim($_POST["password"]);
 
-    // First, check if the user is an Admin
     $stmt = $conn->prepare("SELECT id, username, password FROM admins WHERE username = ?");
     $stmt->bind_param("s", $username);
-    $stmt->execute();   
+    $stmt->execute();
     $stmt->store_result();
 
     if ($stmt->num_rows > 0) {
@@ -21,6 +20,60 @@ if (isset($_POST["login-btn"])) {
         if (md5($password) == $admin_password) {
             $_SESSION['admin_id'] = $admin_id;
             $_SESSION['admin_username'] = $admin_username;
+
+            date_default_timezone_set('Asia/Manila');
+            $today = date('Y-m-d');
+            $tomorrow = date('Y-m-d', strtotime('+1 day'));
+
+            // Insert password update reminder if today is 4-29
+            if (date('m-d') === '04-29') {
+                $checkUpdatePass = $conn->prepare("SELECT id FROM admin_notification WHERE type = 'update-pass' AND DATE(created_at) = ?");
+                $checkUpdatePass->bind_param("s", $today);
+                $checkUpdatePass->execute();
+                $checkUpdatePass->store_result();
+
+                if ($checkUpdatePass->num_rows === 0) {
+                    $notifTitle = "Password Update Reminder";
+                    $notifMessage = "Please update your admin password today.";
+                    $notifType = "update-pass";
+                    $notifLink = "adminupdatepass.php";
+
+                    $insertUpdatePass = $conn->prepare("INSERT INTO admin_notification (title, message, type, link, is_read, created_at) VALUES (?, ?, ?, ?, 0, NOW())");
+                    $insertUpdatePass->bind_param("ssss", $notifTitle, $notifMessage, $notifType, $notifLink);
+                    $insertUpdatePass->execute();
+                    $insertUpdatePass->close();
+                }
+                $checkUpdatePass->close();
+            }
+
+            // Insert event reminder notifications if events are scheduled for tomorrow
+            $eventStmt = $conn->prepare("SELECT id, title FROM events WHERE event_date = ?");
+            $eventStmt->bind_param("s", $tomorrow);
+            $eventStmt->execute();
+            $result = $eventStmt->get_result();
+
+            while ($event = $result->fetch_assoc()) {
+                $notifCheckEvent = $conn->prepare("SELECT id FROM admin_notification WHERE type = 'events' AND message LIKE ?");
+                $likeMessage = "%" . $event['title'] . "%";
+                $notifCheckEvent->bind_param("s", $likeMessage);
+                $notifCheckEvent->execute();
+                $notifCheckEvent->store_result();
+
+                if ($notifCheckEvent->num_rows === 0) {
+                    $notifTitle = "Upcoming Event Tomorrow!";
+                    $notifMessage = "Reminder: '" . $event['title'] . "' will happen tomorrow.";
+                    $notifType = "events";
+                    $notifLink = "admin_eventlists.php";
+
+                    $insertEventNotif = $conn->prepare("INSERT INTO admin_notification (title, message, type, link, is_read, created_at) VALUES (?, ?, ?, ?, 0, NOW())");
+                    $insertEventNotif->bind_param("ssss", $notifTitle, $notifMessage, $notifType, $notifLink);
+                    $insertEventNotif->execute();
+                    $insertEventNotif->close();
+                }
+
+                $notifCheckEvent->close();
+            }
+            $eventStmt->close();
 
             echo "<script>
                     alert('Admin login successful! Redirecting to Admin Dashboard...');
@@ -33,7 +86,7 @@ if (isset($_POST["login-btn"])) {
     // If not an admin, check the Users table
     $stmt = $conn->prepare("SELECT id, username, password FROM users WHERE username = ?");
     $stmt->bind_param("s", $username);
-    $stmt->execute();   
+    $stmt->execute();
     $stmt->store_result();
 
     if ($stmt->num_rows > 0) {
@@ -44,66 +97,6 @@ if (isset($_POST["login-btn"])) {
             $_SESSION['user_id'] = $user_id;
             $_SESSION['username'] = $user_username;
 
-            // ✅ INSERT EVENT REMINDER NOTIFICATIONS HERE
-            // ------------------------------------------------
-            $eventStmt = $conn->prepare("SELECT id, title FROM events WHERE DATE(event_date) = DATE(NOW() + INTERVAL 1 DAY)");
-            $eventStmt->execute();
-            $eventResult = $eventStmt->get_result();
-
-            while ($event = $eventResult->fetch_assoc()) {
-                $eventId = $event['id'];
-                $eventTitle = $event['title'];
-
-                $attendeeStmt = $conn->prepare("SELECT COUNT(*) FROM event_attendance WHERE event_id = ? AND user_id = ?");
-                $attendeeStmt->bind_param("ii", $eventId, $_SESSION['user_id']);
-                $attendeeStmt->execute();
-                $attendeeStmt->bind_result($isAttending);
-                $attendeeStmt->fetch();
-                $attendeeStmt->close();
-
-                if ($isAttending) {
-                    $checkStmt = $conn->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND type = 'event' AND message LIKE ?");
-                    $searchMessage = "%$eventTitle%";
-                    $checkStmt->bind_param("is", $_SESSION['user_id'], $searchMessage);
-                    $checkStmt->execute();
-                    $checkStmt->bind_result($notifExists);
-                    $checkStmt->fetch();
-                    $checkStmt->close();
-
-                    if (!$notifExists) {
-                        $notifStmt = $conn->prepare("INSERT INTO notifications (user_id, title, message, type, is_read, created_at) VALUES (?, ?, ?, 'event', 0, NOW())");
-                        $title = "Event Reminder";
-                        $message = "Reminder: Your event \"$eventTitle\" is scheduled for tomorrow.";
-                        $notifStmt->bind_param("iss", $_SESSION['user_id'], $title, $message);
-                        $notifStmt->execute();
-                        $notifStmt->close();
-                    }
-                }
-            }
-            $eventStmt->close();
-            // ------------------------------------------------
-
-            // ✅ INSERT SECURITY REMINDER NOTIFICATION (only April 28)
-            // ------------------------------------------------
-            if (date('m-d') == '04-28') {
-                // Check if security notification already exists
-                $checkSecurity = $conn->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND type = 'security' AND DATE(created_at) = CURDATE()");
-                $checkSecurity->bind_param("i", $_SESSION['user_id']);
-                $checkSecurity->execute();
-                $checkSecurity->bind_result($securityNotifExists);
-                $checkSecurity->fetch();
-                $checkSecurity->close();
-
-                if (!$securityNotifExists) {
-                    $securityStmt = $conn->prepare("INSERT INTO notifications (user_id, title, message, type, is_read, created_at) VALUES (?, 'Security Reminder', 'It is recommended to update your password regularly.', 'security', 0, NOW())");
-                    $securityStmt->bind_param("i", $_SESSION['user_id']);
-                    $securityStmt->execute();
-                    $securityStmt->close();
-                }
-            }
-            // ------------------------------------------------
-
-            // Now redirect
             echo "<script>
                     alert('Login successful! Redirecting to Home...');
                     window.location.href = '../index.php';

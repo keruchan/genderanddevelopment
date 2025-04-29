@@ -28,16 +28,14 @@ if (isset($_SESSION['admin_id'])) {
     }
 
     // Fetching unread notifications for admin
-    $stmt = $conn->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0");
-    $stmt->bind_param("i", $userId);
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM admin_notification WHERE is_read = 0");
     $stmt->execute();
     $stmt->bind_result($notifCount);
     $stmt->fetch();
     $stmt->close();
 
     // Fetching notifications
-    $stmt = $conn->prepare("SELECT id, title, message, type, created_at, is_read FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 5");
-    $stmt->bind_param("i", $userId);
+    $stmt = $conn->prepare("SELECT id, title, message, type, created_at, is_read FROM admin_notification ORDER BY created_at DESC LIMIT 5");
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
@@ -81,9 +79,10 @@ if (isset($_SESSION['admin_id'])) {
                             <?php foreach ($notifications as $notif): ?>
                                 <?php
                                     $link = '#';
-                                    if ($notif['type'] === 'request') $link = 'adminrequests.php';
-                                    elseif ($notif['type'] === 'event') $link = 'admin_eventlists.php';
-                                    elseif ($notif['type'] === 'security') $link = 'adminupdatepass.php';
+                                    if ($notif['type'] === 'requests') $link = 'adminrequests.php';
+                                    elseif ($notif['type'] === 'events') $link = 'admin_eventlists.php';
+                                    elseif ($notif['type'] === 'update-pass') $link = 'adminupdatepass.php';
+                                    elseif ($notif['type'] === 'new-user') $link = 'usersadmin.php';
                                 ?>
                                 <li>
                                     <a href="<?= $link ?>" data-id="<?= $notif['id'] ?>" class="notif-link <?= $notif['is_read'] == 0 ? 'unread' : '' ?>">
@@ -107,7 +106,7 @@ if (isset($_SESSION['admin_id'])) {
                     <ul class="dropdown-content">
                         <li><a href="adminupdatepass.php">Update</a></li>
                         <li><a href="admin_archived_users.php">Archived Users</a></li>
-                        <li><a href="admin_archive.php">Archived Events</a></li>
+                        <li><a href="admin_archived_events.php">Archived Events</a></li>
                         <li><a href="admin_archive_requests.php">Archived Requests</a></li>
                         <li><a href="connecting/logout.php" onclick="return confirmLogout();">Logout</a></li>
                     </ul>
@@ -129,7 +128,7 @@ if (isset($_SESSION['admin_id'])) {
 
         // Mark all notifications as read
         function markAllAsRead() {
-            fetch('mark_notifications_read.php')
+            fetch('admin_mark_notifications_read.php')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -185,7 +184,7 @@ if (isset($_SESSION['admin_id'])) {
                 const notifElem = e.target.closest('.notif-link');
                 const notifId = notifElem.getAttribute('data-id');
 
-                fetch('mark_single_notification_read.php', {
+                fetch('admin_mark_single_notifications_read.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',

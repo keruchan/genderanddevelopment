@@ -1,49 +1,62 @@
 <?php
-// Start session only if not already active
+// Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-require 'connecting/connect.php'; // Ensure correct path
+require 'connecting/connect.php'; // Database connection
 
-// Ensure user is logged in
+// Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: userin.php");
     exit();
 }
 
-// Initialize messages
+// Initialize message variables
 $successMessage = "";
 $errorMessage = "";
 
 // Handle form submission
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $userId = $_SESSION['user_id'];
     $concernType = trim($_POST['options']);
     $description = trim($_POST['message']);
     
-    // Handle file upload
     $fileName = "";
+
+    // Handle file upload
     if (!empty($_FILES['image']['name'])) {
         $fileTmpPath = $_FILES['image']['tmp_name'];
         $fileName = basename($_FILES['image']['name']);
-        $uploadDir = "requestupload/"; // Make sure this folder exists in your project
+        $uploadDir = "requestupload/";
         $destPath = $uploadDir . $fileName;
 
+        // Move uploaded file
         if (move_uploaded_file($fileTmpPath, $destPath)) {
-            $fileName = $destPath; // Store the path in the database
+            $fileName = $destPath;
         } else {
             $errorMessage = "File upload failed.";
         }
     }
 
+    // Validate required fields
     if (!empty($concernType) && !empty($description)) {
-        // Insert request into database
         $stmt = $conn->prepare("INSERT INTO requests (user_id, concern_type, description, attachment, created_at) VALUES (?, ?, ?, ?, NOW())");
         $stmt->bind_param("isss", $userId, $concernType, $description, $fileName);
 
         if ($stmt->execute()) {
             $successMessage = "Request submitted successfully!";
+
+            // Insert notification for admin
+            $notifTitle = "New Request Submitted";
+            $notifMessage = "A new request has been submitted by a user.";
+            $notifType = "requests";
+            $notifLink = "adminrequests.php";
+
+            $notifStmt = $conn->prepare("INSERT INTO admin_notification (title, message, type, link, is_read, created_at) VALUES (?, ?, ?, ?, 0, NOW())");
+            $notifStmt->bind_param("ssss", $notifTitle, $notifMessage, $notifType, $notifLink);
+            $notifStmt->execute();
+            $notifStmt->close();
         } else {
             $errorMessage = "Error submitting request. Please try again.";
         }
@@ -95,8 +108,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <option value="Empowerment">Empowerment</option>
                 <option value="Inclusion">Inclusion</option>
                 <option value="Discrimination">Discrimination</option>
-                <option value="Discrimination">Others</option>
-
+                <option value="Others">Others</option>
             </select>
         </div>
 

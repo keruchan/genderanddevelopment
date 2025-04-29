@@ -78,7 +78,7 @@ if (isset($_POST["register"])) {
             exit();
         }
 
-        if ($_FILES["profilepic"]["size"] > 2 * 1024 * 1024) { // Max 2MB
+        if ($_FILES["profilepic"]["size"] > 2 * 1024 * 1024) {
             echo "<script>
                     alert('Profile picture size should not exceed 2MB.');
                     window.location.href = '../userup.php';
@@ -110,6 +110,17 @@ if (isset($_POST["register"])) {
     $stmt->bind_param("ssisssssssssssss", $lastname, $firstname, $age, $email, $contact, $address, $department, $course, $yearr, $section, $groupp, $username, $password, $gender, $impair, $profilePicPath);
 
     if ($stmt->execute()) {
+        // Insert notification to admin_notification table
+        $notifTitle = "New User Registered";
+        $notifMessage = "A new user has signed up.";
+        $notifType = "new-user";
+        $notifLink = "usersadmin.php";
+
+        $notifStmt = $conn->prepare("INSERT INTO admin_notification (title, message, type, link, is_read, created_at) VALUES (?, ?, ?, ?, 0, NOW())");
+        $notifStmt->bind_param("ssss", $notifTitle, $notifMessage, $notifType, $notifLink);
+        $notifStmt->execute();
+        $notifStmt->close();
+
         echo "<script>
                 alert('Registration successful!');
                 window.location.href = '../userin.php?success=1';

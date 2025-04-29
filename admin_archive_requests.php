@@ -7,21 +7,8 @@ if (!isset($_SESSION['admin_id'])) {
     echo "<script>alert('Please log in to access this page.'); window.location.href = 'admin_login.php';</script>";
     exit();
 }
+$query = "SELECT * FROM admin_archived_requests ORDER BY created_at DESC";
 
-// Get the filter type (either 'events' or 'requests')
-$type = isset($_GET['type']) ? $_GET['type'] : 'requests'; // Default to 'requests'
-
-// Initialize the query based on the filter type
-if ($type == 'requests') {
-    // Query for archived requests
-    $query = "SELECT * FROM admin_archived_requests ORDER BY created_at DESC";
-} elseif ($type == 'events') {
-    // Query for archived events
-    $query = "SELECT * FROM admin_archived_events ORDER BY event_date DESC";
-} else {
-    // Default to 'requests' if the type is not recognized
-    $query = "SELECT * FROM admin_archived_requests ORDER BY created_at DESC";
-}
 
 $result = $conn->query($query);
 ?>
