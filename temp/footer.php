@@ -27,18 +27,18 @@
                         <a href="#"><li>Request</li></a>
                     </ul> -->
                 </div>
-                <div class="footer-section contact-form">
+                <!-- <div class="footer-section contact-form">
                     <h2>Contact Us</h2>
                     <br>
                     <form action="index2.html" method="post">
-                        <!-- <input type="email" name="email" class="text-input contact-input" placeholder="Your email address...."> -->
+                        <input type="email" name="email" class="text-input contact-input" placeholder="Your email address....">
                         <textarea name="message" class="text-input contact-input" placeholder="Your message"></textarea>
                         <button class="submit btn btn-big">
                             <i class="fas fa-envelope"></i>    
                             Send
                         </button>
                     </form>
-                </div>
+                </div> -->
             </div>
             <!-- <div class="footer-bottom">
                 &copy; cybilltechs.com | Designed by Team B

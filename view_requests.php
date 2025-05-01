@@ -81,9 +81,10 @@ $resetStmt->close();
         <h1 class="recent-post-title" style="text-align: center; margin: 50px;">View Requests</h1>
         <div class="controls">
             <div>
-                <input type="text" class="search-box" placeholder="Search...">
-                <select class="status-filter">
-                    <option value="">Filter by Status</option>
+                <input type="text" id="searchBox" class="search-box" placeholder="Search..." style="font-size: 18px;">
+                <select id="statusFilter" class="status-filter" style="font-size: 18px;">
+                    <option value="" disabled option>Filter by Status</option>
+                    <option value="">All</option>
                     <option value="pending">Pending</option>
                     <option value="approved">Approved</option>
                     <option value="rejected">Rejected</option>
@@ -102,12 +103,13 @@ $resetStmt->close();
                         <th>Created At</th>
                         <th>Attachment</th>
                         <th>Remarks</th>
-                        <th>Action</th> <!-- ✅ New Action Column -->
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($requests as $request): ?>
-                        <tr>
+                        <tr data-status="<?php echo htmlspecialchars(strtolower($request['status'])); ?>" 
+                            data-search="<?php echo htmlspecialchars(strtolower($request['id'] . ' ' . $request['concern_type'] . ' ' . $request['description'] . ' ' . $request['created_at'] . ' ' . $request['remarks'])); ?>">
                             <td><?php echo htmlspecialchars($request['id']); ?></td>
                             <td><?php echo htmlspecialchars($request['concern_type']); ?></td>
                             <td><?php echo htmlspecialchars($request['description']); ?></td>
@@ -126,7 +128,6 @@ $resetStmt->close();
                             </td>
                             <td><?php echo htmlspecialchars($request['remarks']); ?></td>
                             <td>
-                                <!-- ✅ Archive Button -->
                                 <form action="user_archive_requests.php" method="POST" style="margin:0;" onsubmit="return confirmArchive();">
                                     <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
                                     <button type="submit" class="archive-btn">Archive</button>
@@ -144,6 +145,30 @@ $resetStmt->close();
 function confirmArchive() {
     return confirm('Are you sure you want to archive this request?');
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    const searchBox = document.getElementById('searchBox');
+    const statusFilter = document.getElementById('statusFilter');
+    const rows = document.querySelectorAll('tbody tr');
+
+    function filterTable() {
+        const searchValue = searchBox.value.toLowerCase();
+        const selectedStatus = statusFilter.value;
+
+        rows.forEach(row => {
+            const rowStatus = row.dataset.status;
+            const rowSearch = row.dataset.search;
+
+            const matchesSearch = rowSearch.includes(searchValue);
+            const matchesStatus = !selectedStatus || rowStatus === selectedStatus;
+
+            row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+        });
+    }
+
+    searchBox.addEventListener('input', filterTable);
+    statusFilter.addEventListener('change', filterTable);
+});
 </script>
 
 <?php include_once('temp/footer.php'); ?>

@@ -25,8 +25,8 @@ if (isset($_POST["login-btn"])) {
             $today = date('Y-m-d');
             $tomorrow = date('Y-m-d', strtotime('+1 day'));
 
-            // Insert password update reminder if today is 4-29
-            if (date('m-d') === '04-29') {
+            // Insert password update reminder if today is 5-2
+            if (date('m-d') === '05-02') {
                 $checkUpdatePass = $conn->prepare("SELECT id FROM admin_notification WHERE type = 'update-pass' AND DATE(created_at) = ?");
                 $checkUpdatePass->bind_param("s", $today);
                 $checkUpdatePass->execute();
