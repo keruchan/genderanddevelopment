@@ -53,21 +53,27 @@ $stmt->close();
 
 // Fetch upcoming events from the database with optional filtering by month
 if (!empty($selectedMonth) && $selectedMonth !== 'all') {
-    $stmt = $conn->prepare("SELECT id, title, description, event_date, attachment_path, attendees FROM events WHERE MONTH(event_date) = ? AND event_date >= CURDATE() ORDER BY event_date DESC");
+    $stmt = $conn->prepare("SELECT id, title, description, event_date, start_time, end_time, attachment_path, attendees FROM events WHERE MONTH(event_date) = ? AND event_date >= CURDATE() ORDER BY event_date DESC");
     $stmt->bind_param("s", $selectedMonth);
 } else {
-    $stmt = $conn->prepare("SELECT id, title, description, event_date, attachment_path, attendees FROM events WHERE event_date >= CURDATE() ORDER BY event_date DESC");
+    $stmt = $conn->prepare("SELECT id, title, description, event_date, start_time, end_time, attachment_path, attendees FROM events WHERE event_date >= CURDATE() ORDER BY event_date DESC");
 }
 
 $stmt->execute();
-$stmt->bind_result($eventId, $eventTitle, $eventDescription, $eventDate, $eventAttachment, $eventAttendees);
+$stmt->bind_result($eventId, $eventTitle, $eventDescription, $eventDate, $eventStartTime, $eventEndTime, $eventAttachment, $eventAttendees);
 $events = [];
 while ($stmt->fetch()) {
+    // Format start_time and end_time to 12-hour AM/PM format
+    $formattedStartTime = date("h:i A", strtotime($eventStartTime));
+    $formattedEndTime = date("h:i A", strtotime($eventEndTime));
+
     $events[] = [
         'id' => $eventId,
         'title' => $eventTitle,
         'description' => $eventDescription,
         'event_date' => $eventDate,
+        'start_time' => $formattedStartTime,
+        'end_time' => $formattedEndTime,
         'attachment_path' => $eventAttachment,
         'attendees' => $eventAttendees
     ];
@@ -79,7 +85,6 @@ $stmt->close();
 <?php include_once('temp/navigation.php'); ?>
 
 <!-- Page Wrapper -->
-
 <div class="page-wrapper">
     <div class="post-slider">
         <h1 class="post-slider-title">Learn about Gender and Development</h1>
@@ -93,7 +98,6 @@ $stmt->close();
                 <img src="images/<?php echo htmlspecialchars($story['picture']); ?>" alt="" class="slider-image">
                 <div class="post-info">
                     <h4><a href="single.php?id=<?php echo htmlspecialchars($story['id']); ?>"><?php echo htmlspecialchars($story['title']); ?></a></h4>
-                    <!-- Removed writer information from the carousel -->
                     <i class="far fa-calendar"><?php echo htmlspecialchars($story['date_published']); ?></i>
                 </div>
             </div>
@@ -111,11 +115,13 @@ $stmt->close();
                 <p>No upcoming events found for the selected month.</p>
             <?php else: ?>
                 <?php foreach ($events as $event): ?>
-                <div class="post">
+                <div class="post event-container">
                     <img src="attachments/<?php echo htmlspecialchars($event['attachment_path']); ?>" alt="" class="post-image">
                     <div class="post-preview">
                         <h2><?php echo htmlspecialchars($event['title']); ?></h2>
-                        <i class="far fa-calendar"><?php echo htmlspecialchars(date("F j, Y", strtotime($event['event_date']))); ?></i>
+                        <p><i class="far fa-calendar"></i> <?php echo htmlspecialchars(date("F j, Y", strtotime($event['event_date']))); ?> 
+                        | <strong>Start Time:</strong> <?php echo htmlspecialchars($event['start_time']); ?> 
+                        | <strong>End Time:</strong> <?php echo htmlspecialchars($event['end_time']); ?></p>
                         <p class="preview-text">
                             <?php echo nl2br(htmlspecialchars($event['description'])); ?>
                         </p>
@@ -179,7 +185,39 @@ $stmt->close();
 <?php include_once('temp/footer.php'); ?>
 
 <style>
-/* Ensure the filter is properly styled */
+/* Ensure proper box sizing and text wrapping for event containers */
+.event-container {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden; /* Prevent content overflow */
+    background-color: #fff; /* Add a white background for better readability */
+}
+
+.event-container .post-image {
+    max-width: 100%; /* Ensure the image doesn't overflow */
+    height: auto;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.event-container .post-preview {
+    word-wrap: break-word; /* Break long text to prevent overflow */
+    overflow-wrap: break-word;
+}
+
+.event-container p {
+    margin: 5px 0;
+}
+
+.event-container h2 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
 .text-input {
     width: 100%;
     padding: 10px;

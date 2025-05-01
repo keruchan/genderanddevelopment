@@ -83,6 +83,7 @@ if (isset($_SESSION['admin_id'])) {
                                     elseif ($notif['type'] === 'events') $link = 'admin_eventlists.php';
                                     elseif ($notif['type'] === 'update-pass') $link = 'adminupdatepass.php';
                                     elseif ($notif['type'] === 'new-user') $link = 'usersadmin.php';
+                                    elseif ($notif['type'] === 'userupdate') $link = 'usersadmin.php';
                                 ?>
                                 <li>
                                     <a href="<?= $link ?>" data-id="<?= $notif['id'] ?>" class="notif-link <?= $notif['is_read'] == 0 ? 'unread' : '' ?>">

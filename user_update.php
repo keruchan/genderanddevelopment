@@ -33,9 +33,8 @@ if ($result->num_rows > 0) {
     exit();
 }
 ?>
-
 <style>
-    body {
+        body {
         font-family: Arial, sans-serif;
         background-color: #f3f4f6;
         color: #333;
@@ -134,7 +133,6 @@ if ($result->num_rows > 0) {
         text-decoration: underline;
     }
 </style>
-
 <div class="container">
     <h2>Update User Information</h2>
     <form action="user_update.php" method="POST" enctype="multipart/form-data" 
@@ -325,33 +323,58 @@ if (isset($_POST["update"])) {
         }
     }
 
-    // Update User Data
-    $stmt = $conn->prepare("UPDATE users SET lastname=?, firstname=?, age=?, email=?, contact=?, address=?, department=?, course=?, yearr=?, section=?, groupp=?, gender=?, impairment=?, profilepic=? WHERE id=?");
+    // Begin Transaction
+    $conn->begin_transaction();
 
-    if (!$stmt) {
-        echo "<script>
-                alert('Database error! Please try again.');
-                window.location.href = 'user_update.php';
-              </script>";
-        exit();
-    }
+    try {
+        // Update User Data
+        $stmt = $conn->prepare("UPDATE users SET lastname=?, firstname=?, age=?, email=?, contact=?, address=?, department=?, course=?, yearr=?, section=?, groupp=?, gender=?, impairment=?, profilepic=? WHERE id=?");
 
-    $stmt->bind_param("ssisssssssssssi", $lastname, $firstname, $age, $email, $contact, $address, $department, $course, $yearr, $section, $groupp, $gender, $impair, $profilePicPath, $user_id);
+        if (!$stmt) {
+            throw new Exception("Database error! Please try again.");
+        }
 
-    if ($stmt->execute()) {
+        $stmt->bind_param("ssisssssssssssi", $lastname, $firstname, $age, $email, $contact, $address, $department, $course, $yearr, $section, $groupp, $gender, $impair, $profilePicPath, $user_id);
+        if (!$stmt->execute()) {
+            throw new Exception("Update failed. Try again!");
+        }
+
+        // Insert Notification into admin_notification
+        $notificationTitle = "User Profile Updated";
+        $notificationMessage = "The user '$firstname $lastname' has updated their profile.";
+        $notificationType = "new-user";
+        $notificationIsRead = 0;
+        $notificationLink = "user_profile.php?id=" . $user_id;
+
+        $notificationStmt = $conn->prepare("INSERT INTO admin_notification (title, message, type, is_read, link) VALUES (?, ?, ?, ?, ?)");
+        if (!$notificationStmt) {
+            throw new Exception("Failed to prepare notification query.");
+        }
+
+        $notificationStmt->bind_param("sssis", $notificationTitle, $notificationMessage, $notificationType, $notificationIsRead, $notificationLink);
+        if (!$notificationStmt->execute()) {
+            throw new Exception("Failed to insert notification.");
+        }
+
+        // Commit Transaction
+        $conn->commit();
+
         echo "<script>
                 alert('Update successful!');
                 window.location.href = 'index.php';
               </script>";
-        exit();
-    } else {
+    } catch (Exception $e) {
+        // Rollback Transaction
+        $conn->rollback();
+
         echo "<script>
-                alert('Update failed. Try again!');
+                alert('" . $e->getMessage() . "');
                 window.location.href = 'user_update.php';
               </script>";
     }
 
     $stmt->close();
+    $notificationStmt->close();
     $conn->close();
 } else {
     exit();

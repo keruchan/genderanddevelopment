@@ -129,7 +129,8 @@ if (isset($_GET['delete_id'])) {
             background-color: #f2f2f2;
         }
         .event-container {
-            margin-top: 50px;
+            
+            margin-bottom: 50px;
         }
         .action-btn {
             background-color: transparent;
@@ -251,7 +252,7 @@ if (isset($_GET['delete_id'])) {
                         <tr>
                             <td><?php echo $counter++; ?></td>
                             <td><?php echo htmlspecialchars($event['title']); ?></td>
-                            <td><?php echo htmlspecialchars($event['event_date']) . " " . htmlspecialchars($event['start_time']); ?></td>
+                            <td><?php echo htmlspecialchars(date("F j, Y h:i A", strtotime($event['event_date'] . " " . $event['start_time']))); ?></td>
                             <td><?php echo $event['attendee_count']; ?></td>
                             <td><?php echo renderStars($event['organization_avg']); ?></td>
                             <td><?php echo renderStars($event['speaker_avg']); ?></td>
@@ -282,8 +283,8 @@ if (isset($_GET['delete_id'])) {
         document.getElementById('eventTitle').innerText = event.title;
         document.getElementById('eventDescription').innerText = event.description;
         document.getElementById('eventImage').src = "attachments/" + event.attachment_path;
-        document.getElementById('eventStartTime').innerText = event.start_time;
-        document.getElementById('eventEndTime').innerText = event.end_time;
+        document.getElementById('eventStartTime').innerText = formatTime(event.start_time);
+        document.getElementById('eventEndTime').innerText = formatTime(event.end_time);
         document.getElementById('eventModal').style.display = 'block';
         document.getElementById('modalOverlay').style.display = 'block';
     }
@@ -291,6 +292,13 @@ if (isset($_GET['delete_id'])) {
     function hideEventModal() {
         document.getElementById('eventModal').style.display = 'none';
         document.getElementById('modalOverlay').style.display = 'none';
+    }
+
+    function formatTime(time) {
+        const [hours, minutes] = time.split(':');
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const formattedHours = (hours % 12) || 12; // Convert 0 to 12 for AM/PM format
+        return `${formattedHours}:${minutes} ${period}`;
     }
 </script>
 

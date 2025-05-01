@@ -76,6 +76,21 @@ session_start();
         .unattend-btn {
             background-color: #dc3545;
         }
+        .event-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .event-card h3 {
+            margin: 0 0 10px;
+            color: #007bff;
+        }
+        .event-card p {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
@@ -106,6 +121,8 @@ session_start();
 
                     if ($result->num_rows > 0) {
                         while ($row = $result->fetch_assoc()) {
+                            $formattedStartTime = date("h:i A", strtotime($row['start_time']));
+                            $formattedEndTime = date("h:i A", strtotime($row['end_time']));
                             $eventDateTime = $row['event_date'] . ' ' . $row['start_time'];
                             $currentDateTime = date('Y-m-d H:i:s');
 
@@ -113,8 +130,8 @@ session_start();
                                 "<td>" . $counter++ . "</td>",
                                 "<td>" . htmlspecialchars($row['title']) . "</td>",
                                 "<td>" . htmlspecialchars($row['event_date']) . "</td>",
-                                "<td>" . htmlspecialchars($row['start_time']) . "</td>",
-                                "<td>" . htmlspecialchars($row['end_time']) . "</td>";
+                                "<td>" . $formattedStartTime . "</td>",
+                                "<td>" . $formattedEndTime . "</td>";
 
                             $evalStmt = $conn->prepare("SELECT AVG((organization_1 + organization_2 + organization_3 + materials_1 + materials_2 + speaker_1 + speaker_2 + speaker_3 + speaker_4 + speaker_5 + overall_1 + overall_2)/12) as average_rating FROM event_evaluations WHERE user_id = ? AND event_id = ?");
                             $evalStmt->bind_param("ii", $user_id, $row['id']);
@@ -162,14 +179,19 @@ session_start();
             <h2>Upcoming Events</h2>
             <?php
                 require 'connecting/connect.php';
-                $query = "SELECT e.id, e.title, e.event_date, e.description, 
+                $query = "SELECT e.id, e.title, e.event_date, e.start_time, e.end_time, e.description, 
                                  (SELECT COUNT(*) FROM event_attendance ea WHERE ea.event_id = e.id) AS attendee_count 
                           FROM events e ORDER BY e.event_date ASC";
                 $result = $conn->query($query);
                 while ($event = $result->fetch_assoc()) {
+                    $formattedStartTime = date("h:i A", strtotime($event['start_time']));
+                    $formattedEndTime = date("h:i A", strtotime($event['end_time']));
+
                     echo "<div class='event-card'>",
                         "<h3>" . htmlspecialchars($event['title']) . "</h3>",
                         "<p><strong>Date:</strong> " . htmlspecialchars($event['event_date']) . "</p>",
+                        "<p><strong>Start Time:</strong> " . $formattedStartTime . "</p>",
+                        "<p><strong>End Time:</strong> " . $formattedEndTime . "</p>",
                         "<p>" . htmlspecialchars($event['description']) . "</p>",
                         "<p><strong>Attendees:</strong> " . $event['attendee_count'] . "</p>";
 

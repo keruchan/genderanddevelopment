@@ -146,7 +146,7 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
         
         <!-- Modal for rejecting or approving with remarks -->
         <div id="approveRejectModal">
-            <textarea id="remarks" placeholder="Remarks for approved/disapproved..." rows="4" style="width:100%;"></textarea>
+            <textarea id="remarks" placeholder="Remarks for approved/rejected..." rows="4" style="width:100%;"></textarea>
             <br>
             <button onclick="submitStatusUpdate('approved')">Approve</button>
             <button onclick="submitStatusUpdate('rejected')">Reject</button>
@@ -185,16 +185,30 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
         document.getElementById("modalRequestNo").innerText = request.id;
         document.getElementById("modalFullName").innerText = request.lastname + ", " + request.firstname;
         document.getElementById("modalGroup").innerText = request.concern_type;
-        document.getElementById("modalDate").innerText = request.created_at;
+        document.getElementById("modalDate").innerText = formatTime(request.created_at); // Format date to 12-hour format with AM/PM
         document.getElementById("modalStatus").innerText = request.status;
         document.getElementById("modalDescription").innerText = request.description;
 
         // Store attachment path
-        let attachmentPath =  request.attachment;
+        let attachmentPath = request.attachment;
         document.getElementById("modalAttachmentLink").setAttribute("data-src", attachmentPath);
 
         document.getElementById("viewModal").style.display = "flex";
         document.getElementById("approveRejectModal").style.display = "block"; // Show the approve/reject buttons
+    }
+
+    function formatTime(dateTime) {
+        const date = new Date(dateTime);
+        const options = { 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit', 
+            year: 'numeric', 
+            month: 'long', 
+            day: '2-digit', 
+            hour12: true 
+        };
+        return date.toLocaleString('en-US', options);
     }
 
     function submitStatusUpdate(status) {
@@ -235,25 +249,25 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
     }
 
     function deleteRequest(requestId) {
-    if (confirm("Are you sure you want to archive this request?")) {
-        // Send a request to archive and delete the data
-        fetch("archive_and_delete_request.php", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: `id=${encodeURIComponent(requestId)}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message);
-                location.reload(); // Reload the page to reflect the deletion
-            } else {
-                alert("Failed to archive and delete the request: " + (data.message || "Unknown error."));
-            }
-        })
-        .catch(error => console.error("Error:", error));
+        if (confirm("Are you sure you want to archive this request?")) {
+            // Send a request to archive and delete the data
+            fetch("archive_and_delete_request.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `id=${encodeURIComponent(requestId)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload(); // Reload the page to reflect the deletion
+                } else {
+                    alert("Failed to archive and delete the request: " + (data.message || "Unknown error."));
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
     }
-}
 </script>
 
 <style>
