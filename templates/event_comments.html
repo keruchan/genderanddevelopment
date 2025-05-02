@@ -15,6 +15,7 @@
         .container {
             width: 80%;
             margin: 0 auto;
+            overflow: hidden;
         }
         #main-header {
             background-color: #333;
@@ -60,10 +61,23 @@
             font-size: 1.1em;
             color: #555;
         }
-        .comment .event-title {
-            font-weight: bold;
-            color: #333;
-            font-size: 1.2em;
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pagination a {
+            padding: 10px 15px;
+            margin: 0 5px;
+            background-color: #0779e4;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .pagination a:hover {
+            background-color: #055bb5;
+        }
+        .pagination .current-page {
+            background-color: #055bb5;
         }
     </style>
 </head>
@@ -92,7 +106,7 @@
                     <em>Commented on {{ comment.created_at }}</em>
                 </div>
                 <div class="content">
-                    <p>{{ comment.comment }}</p>
+                    <p>{{ comment.comments }}</p>
                     <p><strong>Sentiment: </strong>{{ comment.sentiment }}</p>
                 </div>
             </div>
@@ -128,6 +142,21 @@
                 }
             });
         </script>
+
+        <!-- Pagination Links -->
+        <div class="pagination">
+            {% if page > 1 %}
+                <a href="/event_comments?event_id={{ event_id }}&page={{ page - 1 }}">Previous</a>
+            {% endif %}
+
+            {% for i in range(1, total_pages + 1) %}
+                <a href="/event_comments?event_id={{ event_id }}&page={{ i }}" class="{{ 'current-page' if i == page else '' }}">{{ i }}</a>
+            {% endfor %}
+
+            {% if page < total_pages %}
+                <a href="/event_comments?event_id={{ event_id }}&page={{ page + 1 }}">Next</a>
+            {% endif %}
+        </div>
     </div>
 </div>
 

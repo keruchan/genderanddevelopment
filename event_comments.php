@@ -1,9 +1,9 @@
-<?php 
+<?php
 session_start();
 require 'connecting/connect.php'; // Ensure correct path
 
 // Define how many comments to display per page
-$commentsPerPage = 5;
+$commentsPerPage = 10;
 
 // Get the event_id from the URL (ensure it exists)
 $eventId = isset($_GET['event_id']) ? (int)$_GET['event_id'] : 0;
@@ -68,12 +68,41 @@ $stmt->execute();
 $stmt->bind_result($comments, $created_at, $firstname, $lastname);
 
 $commentsList = [];
+
+// Basic Sentiment Analysis Function
+function getSentiment($text) {
+    // Simple keyword-based sentiment analysis (expandable)
+    $positive_keywords = ['good', 'great', 'excellent', 'positive', 'amazing', 'love'];
+    $negative_keywords = ['bad', 'poor', 'hate', 'negative', 'terrible', 'worst'];
+    
+    // Convert text to lowercase
+    $text = strtolower($text);
+    
+    // Check for positive or negative keywords
+    foreach ($positive_keywords as $keyword) {
+        if (strpos($text, $keyword) !== false) {
+            return 'positive';
+        }
+    }
+    foreach ($negative_keywords as $keyword) {
+        if (strpos($text, $keyword) !== false) {
+            return 'negative';
+        }
+    }
+    // Default to neutral if no keywords match
+    return 'neutral';
+}
+
 while ($stmt->fetch()) {
+    // Get sentiment from the text
+    $sentiment = getSentiment($comments);
+    
     $commentsList[] = [
         'comments' => $comments,
         'created_at' => $created_at,
         'firstname' => $firstname,
-        'lastname' => $lastname
+        'lastname' => $lastname,
+        'sentiment' => $sentiment
     ];
 }
 $stmt->close();
@@ -89,9 +118,9 @@ $stmt->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Comments - <?php echo htmlspecialchars($eventTitle); ?></title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
+                body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
@@ -168,7 +197,7 @@ $stmt->close();
         }
         .pagination .current-page {
             background-color: #055bb5;
-        }
+        }	
     </style>
 </head>
 <body>
@@ -197,12 +226,47 @@ $stmt->close();
                 </div>
                 <div class="content">
                     <?php echo nl2br(htmlspecialchars($comment['comments'])); ?>
+                    <p><strong>Sentiment: </strong><?php echo htmlspecialchars($comment['sentiment']); ?></p>
                 </div>
             </div>
             <?php endforeach; ?>
         <?php else: ?>
             <p>No comments available for this event.</p>
         <?php endif; ?>
+
+        <!-- Sentiment Analysis Graph -->
+        <canvas id="sentimentChart" width="400" height="200"></canvas>
+        <script>
+            // Sentiment count for the graph
+            const sentimentCounts = {
+                positive: <?php echo count(array_filter($commentsList, fn($c) => $c['sentiment'] == 'positive')); ?>,
+                negative: <?php echo count(array_filter($commentsList, fn($c) => $c['sentiment'] == 'negative')); ?>,
+                neutral: <?php echo count(array_filter($commentsList, fn($c) => $c['sentiment'] == 'neutral')); ?>
+            };
+            
+            const ctx = document.getElementById('sentimentChart').getContext('2d');
+            const sentimentChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Positive', 'Negative', 'Neutral'],
+                    datasets: [{
+                        label: 'Sentiment Distribution',
+                        data: [sentimentCounts.positive, sentimentCounts.negative, sentimentCounts.neutral],
+                        backgroundColor: ['green', 'red', 'orange'],
+                        borderColor: ['darkgreen', 'darkred', 'darkgray'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        </script>
 
         <!-- Pagination Links -->
         <div class="pagination">
@@ -220,12 +284,9 @@ $stmt->close();
             <?php if ($page < $totalPages): ?>
                 <a href="event_comments.php?event_id=<?php echo $eventId; ?>&page=<?php echo $page + 1; ?>">Next</a>
             <?php endif; ?>
-            <p> </p>
-            <p> </p>
         </div>
     </div>
 </div>
-
 
 </body>
 </html>
