@@ -166,7 +166,7 @@ $avgOverall = $evaluationsData['avgOverall'];
 
 
 <section class="charts">
-  <div class="chart-container"><h3>Requests (Past 12 Months + Forecasted)</h3><canvas id="requestsChart"></canvas></div>
+  <div class="chart-container"><h3>Requests (With Forecasted Month)</h3><canvas id="requestsChart"></canvas></div>
   <div class="chart-container"><h3>Request Status</h3><canvas id="requestsStatusChart"></canvas></div>
 </section>
 
