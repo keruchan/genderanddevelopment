@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Comments - {{ event_title }}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+        #main-header {
+            background-color: #333;
+            color: #fff;
+            padding-top: 30px;
+            min-height: 70px;
+            border-bottom: #0779e4 3px solid;
+        }
+        #main-header h1 {
+            text-align: center;
+            text-transform: uppercase;
+            margin: 0;
+            font-size: 24px;
+        }
+        #main-footer {
+            background: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            margin-top: 30px;
+        }
+        .comments-section {
+            margin-top: 30px;
+        }
+        .comment {
+            background: #fff;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .comment .user-info {
+            font-size: 1em;
+            font-weight: bold;
+            color: #333;
+        }
+        .comment .created-at {
+            font-size: 0.9em;
+            color: #888;
+        }
+        .comment .content {
+            margin-top: 10px;
+            font-size: 1.1em;
+            color: #555;
+        }
+        .comment .event-title {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+
+<header id="main-header">
+    <div class="container">
+        <h1>Comments for Event: {{ event_title }}</h1>
+    </div>
+</header>
+
+<div class="container">
+    <div class="comments-section">
+        <!-- Display the Event Title -->
+        <div class="event-title">
+            <h2>{{ event_title }}</h2>
+        </div>
+        
+        {% if comments %}
+            {% for comment in comments %}
+            <div class="comment">
+                <div class="user-info">
+                    <span>{{ comment.firstname }} {{ comment.lastname }}</span>
+                </div>
+                <div class="created-at">
+                    <em>Commented on {{ comment.created_at }}</em>
+                </div>
+                <div class="content">
+                    <p>{{ comment.comment }}</p>
+                    <p><strong>Sentiment: </strong>{{ comment.sentiment }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>No comments available for this event.</p>
+        {% endif %}
+
+        <!-- Sentiment Analysis Graph -->
+        <canvas id="sentimentChart" width="400" height="200"></canvas>
+        <script>
+            const sentimentCounts = {{ sentiment_counts | tojson }};
+            const ctx = document.getElementById('sentimentChart').getContext('2d');
+            const sentimentChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Positive', 'Negative', 'Neutral'],
+                    datasets: [{
+                        label: 'Sentiment Distribution',
+                        data: [sentimentCounts['positive'], sentimentCounts['negative'], sentimentCounts['neutral']],
+                        backgroundColor: ['green', 'red', 'gray'],
+                        borderColor: ['darkgreen', 'darkred', 'darkgray'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        </script>
+    </div>
+</div>
+
+</body>
+</html>

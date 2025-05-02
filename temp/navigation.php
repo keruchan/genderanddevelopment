@@ -76,7 +76,7 @@ if (isset($_SESSION['user_id'])) {
                         $link = '#';
                         if ($notif['type'] === 'request') $link = 'view_requests.php';
                         elseif ($notif['type'] === 'event') $link = 'event_list.php';
-                        elseif ($notif['type'] === 'security') $link = 'user_update_password.php';
+                        elseif ($notif['type'] === 'security') $link = 'user_update.php';
                         ?>
                         <li>
                             <a href="<?= $link ?>" data-id="<?= $notif['id'] ?>" class="notif-link <?= $notif['is_read'] == 0 ? 'unread' : '' ?>">
@@ -160,10 +160,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         else if (notif.type === 'security') link = 'user_update_password.php';
 
                         const newNotif = document.createElement('li');
-                        newNotif.innerHTML = `
+                        newNotif.innerHTML = ` 
                             <a href="${link}" data-id="${notif.id}" class="notif-link ${notif.is_read == 0 ? 'unread' : ''}">
-                                <strong>${notif.title}</strong><br>
-                                <small>${notif.created_at}</small><br>
+                                <strong class="blue-text">${notif.title}</strong><br>
+                                <small class="blue-text">${notif.created_at}</small><br>
                                 ${notif.message}
                             </a>
                         `;
@@ -203,6 +203,7 @@ document.addEventListener('click', function(e) {
 </script>
 
 <style>
+/* Existing CSS */
 .dropdown {
     position: relative;
     display: inline-block;
