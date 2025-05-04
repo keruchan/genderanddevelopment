@@ -98,7 +98,7 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
                     <td><?= $request['id'] ?></td>
                     <td><?= htmlspecialchars($request['lastname'] . ', ' . $request['firstname']) ?></td>
                     <td class="concern_type"><?= htmlspecialchars($request['concern_type']) ?></td>
-                    <td><?= htmlspecialchars($request['created_at']) ?></td>
+                    <td><?= date('m/d/Y h:i:s A', strtotime($request['created_at'])) ?></td>
                     <td class="status <?= strtolower(htmlspecialchars($request['status'])) ?>"><?= htmlspecialchars($request['status']) ?></td>
                     <td>
                         <button class="view-btn" onclick="viewRequest(<?= htmlspecialchars(json_encode($request)) ?>)">

@@ -31,11 +31,9 @@ $groupAverageRatings = $groupRatingsData['groupAverageRatings'];
 
 // Function for forecasting moving average
 function forecastMovingAverage($data, $windowSize) {
-    // Check if the data array is empty before proceeding
     if (empty($data)) {
-        return 0;  // Return 0 or any default value in case there's no data
+        return 0;
     }
-    
     $window = array_slice($data, -$windowSize);
     $forecast = array_sum($window) / count($window);
     return round($forecast);
@@ -94,7 +92,7 @@ $avgOverall = $evaluationsData['avgOverall'];
     .card p { color: gray; margin: 0; }
     .charts { display: flex; flex-wrap: wrap; gap: 20px; padding: 20px; }
     .chart-container { flex: 1 1 300px; min-width: 280px; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .chart-container canvas { width: 100% !important; height: 190px !important; }
+    .chart-container canvas { width: 100% !important; height: 300px !important; }
     .filter-container {
       background: #f9f9f9;
       padding: 20px;
@@ -164,7 +162,6 @@ $avgOverall = $evaluationsData['avgOverall'];
   </form>
 </section>
 
-
 <section class="charts">
   <div class="chart-container"><h3>Requests (With Forecasted Month)</h3><canvas id="requestsChart"></canvas></div>
   <div class="chart-container"><h3>Request Status</h3><canvas id="requestsStatusChart"></canvas></div>
@@ -173,6 +170,9 @@ $avgOverall = $evaluationsData['avgOverall'];
 <section class="charts">
   <div class="chart-container"><h3>Attendees per Event</h3><canvas id="attendeesChart"></canvas></div>
   <div class="chart-container"><h3>Highest Rated Events</h3><canvas id="ratingsChart"></canvas></div>
+</section>
+
+<section class="charts">
   <div class="chart-container">
     <h3>Event Evaluation (Average Ratings)</h3>
     <form method="GET" style="margin-bottom: 10px;">
@@ -185,28 +185,12 @@ $avgOverall = $evaluationsData['avgOverall'];
     </form>
     <canvas id="evaluationChart"></canvas>
   </div>
+  <div class="chart-container"><h3>Total Attendees per Group</h3><canvas id="attendeesPerGroupChart"></canvas></div>
 </section>
 
-<!-- New section for additional charts -->
 <section class="charts">
-  <!-- Total Attendees per Group (Bar Chart) -->
-  <div class="chart-container">
-    <h3>Total Attendees per Group</h3>
-    <canvas id="attendeesPerGroupChart"></canvas>
-  </div>
-
-<!-- Ratings per Group (Bar Chart) -->
-<div class="chart-container">
-  <h3>Ratings per Group</h3>
-  <canvas id="ratingsPerEventChart"></canvas>
-</div>
-
-
-  <!-- Group Type Distribution (Doughnut Chart) -->
-  <div class="chart-container">
-    <h3>Group Type Distribution</h3>
-    <canvas id="groupTypeDistributionChart"></canvas>
-  </div>
+  <div class="chart-container"><h3>Ratings per Group</h3><canvas id="ratingsPerEventChart"></canvas></div>
+  <div class="chart-container"><h3>Group Type Distribution</h3><canvas id="groupTypeDistributionChart"></canvas></div>
 </section>
 
 <script>
