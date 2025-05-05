@@ -74,6 +74,10 @@ $avgOrganization = $evaluationsData['avgOrganization'];
 $avgMaterials = $evaluationsData['avgMaterials'];
 $avgSpeaker = $evaluationsData['avgSpeaker'];
 $avgOverall = $evaluationsData['avgOverall'];
+
+// Filter by month and year if set in the URL
+$monthFilter = isset($_GET['month']) ? $_GET['month'] : '';
+$yearFilter = isset($_GET['year']) ? $_GET['year'] : '';
 ?>
 
 <!DOCTYPE html>
@@ -136,26 +140,17 @@ $avgOverall = $evaluationsData['avgOverall'];
     <label for="month" style="font-weight: bold;">Month:</label>
     <select name="month" id="month">
       <option value="">All Months</option>
-      <option value="January" <?= isset($_GET['month']) && $_GET['month'] == 'January' ? 'selected' : '' ?>>January</option>
-      <option value="February" <?= isset($_GET['month']) && $_GET['month'] == 'February' ? 'selected' : '' ?>>February</option>
-      <option value="March" <?= isset($_GET['month']) && $_GET['month'] == 'March' ? 'selected' : '' ?>>March</option>
-      <option value="April" <?= isset($_GET['month']) && $_GET['month'] == 'April' ? 'selected' : '' ?>>April</option>
-      <option value="May" <?= isset($_GET['month']) && $_GET['month'] == 'May' ? 'selected' : '' ?>>May</option>
-      <option value="June" <?= isset($_GET['month']) && $_GET['month'] == 'June' ? 'selected' : '' ?>>June</option>
-      <option value="July" <?= isset($_GET['month']) && $_GET['month'] == 'July' ? 'selected' : '' ?>>July</option>
-      <option value="August" <?= isset($_GET['month']) && $_GET['month'] == 'August' ? 'selected' : '' ?>>August</option>
-      <option value="September" <?= isset($_GET['month']) && $_GET['month'] == 'September' ? 'selected' : '' ?>>September</option>
-      <option value="October" <?= isset($_GET['month']) && $_GET['month'] == 'October' ? 'selected' : '' ?>>October</option>
-      <option value="November" <?= isset($_GET['month']) && $_GET['month'] == 'November' ? 'selected' : '' ?>>November</option>
-      <option value="December" <?= isset($_GET['month']) && $_GET['month'] == 'December' ? 'selected' : '' ?>>December</option>
+      <?php foreach (['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] as $month): ?>
+        <option value="<?= $month; ?>" <?= $month === $monthFilter ? 'selected' : ''; ?>><?= $month; ?></option>
+      <?php endforeach; ?>
     </select>
 
     <label for="year" style="font-weight: bold;">Year:</label>
     <select name="year" id="year">
       <option value="">All Years</option>
-      <option value="2025" <?= isset($_GET['year']) && $_GET['year'] == '2025' ? 'selected' : '' ?>>2025</option>
-      <option value="2024" <?= isset($_GET['year']) && $_GET['year'] == '2024' ? 'selected' : '' ?>>2024</option>
-      <option value="2023" <?= isset($_GET['year']) && $_GET['year'] == '2023' ? 'selected' : '' ?>>2023</option>
+      <?php foreach (['2025', '2024', '2023'] as $year): ?>
+        <option value="<?= $year; ?>" <?= $year === $yearFilter ? 'selected' : ''; ?>><?= $year; ?></option>
+      <?php endforeach; ?>
     </select>
 
     <button type="submit">Apply Filters</button>
