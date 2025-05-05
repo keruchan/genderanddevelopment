@@ -26,8 +26,8 @@ if (isset($_POST["login-btn"])) {
             $today = date('Y-m-d');
             $tomorrow = date('Y-m-d', strtotime('+1 day'));
 
-            // Insert password update reminder if today is 5-2
-            if (date('m-d') === '05-02') {
+            // Insert password update reminder if today is 5-5
+            if (date('m-d') === '05-05') {
                 $checkUpdatePass = $conn->prepare("SELECT id FROM admin_notification WHERE type = 'update-pass' AND DATE(created_at) = ?");
                 $checkUpdatePass->bind_param("s", $today);
                 $checkUpdatePass->execute();
@@ -102,7 +102,7 @@ if (isset($_POST["login-btn"])) {
             $today = date('Y-m-d');
 
             // Insert user profile/password update reminder if today is 5-2
-            if (date('m-d') === '05-02') {
+            if (date('m-d') === '05-05') {
                 $checkUserReminder = $conn->prepare("SELECT id FROM notifications WHERE type = 'security' AND user_id = ? AND DATE(created_at) = ?");
                 $checkUserReminder->bind_param("is", $user_id, $today);
                 $checkUserReminder->execute();
