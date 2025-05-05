@@ -72,8 +72,42 @@ $commentsList = [];
 // Basic Sentiment Analysis Function
 function getSentiment($text) {
     // Simple keyword-based sentiment analysis (expandable)
-    $positive_keywords = ['good', 'great', 'excellent', 'positive', 'amazing', 'love'];
-    $negative_keywords = ['bad', 'poor', 'hate', 'negative', 'terrible', 'worst'];
+    $positive_keywords = [
+        'good', 'great', 'excellent', 'positive', 'amazing', 'love', 'wonderful', 
+        'outstanding', 'fantastic', 'awesome', 'superb', 'terrific', 'marvelous', 
+        'happy', 'joyful', 'delightful', 'satisfied', 'content', 'blessed', 'pleased',
+        'successful', 'incredible', 'remarkable', 'brilliant', 'inspiring', 'motivating',
+        'uplifting', 'cheerful', 'grateful', 'peaceful', 'bright', 'fun', 'beautiful', 
+        'favorable', 'outstanding', 'admirable', 'affectionate', 'attractive', 'beneficial',
+        'bravo', 'charming', 'classy', 'commendable', 'confident', 'delicious', 'dazzling',
+        'dynamic', 'eager', 'energetic', 'enjoyable', 'enthusiastic', 'extraordinary', 
+        'fabulous', 'faithful', 'fancy', 'fantastic', 'flawless', 'fortunate', 'friendly',
+        'genuine', 'good-hearted', 'gorgeous', 'graceful', 'greatest', 'handsome', 'happy-go-lucky',
+        'healthy', 'honorable', 'hopeful', 'impressive', 'incredible', 'indispensable', 'innovative',
+        'jovial', 'lively', 'lovable', 'memorable', 'miraculous', 'motivated', 'outstanding', 'precious',
+        'radiant', 'respectable', 'robust', 'smooth', 'successful', 'sweet', 'talented', 'thoughtful',
+        'triumphant', 'trustworthy', 'upbeat', 'vibrant', 'virtuous', 'visionary', 'wealthy', 'winning',
+        'wise', 'worthy', 'youthful', 'zealous', 'zesty'
+    ];
+    
+    
+    $negative_keywords = [
+        'bad', 'poor', 'hate', 'negative', 'terrible', 'worst', 'awful', 'horrible',
+        'dreadful', 'unpleasant', 'disappointing', 'unfortunate', 'unhappy', 'saddening',
+        'depressing', 'miserable', 'pathetic', 'ugly', 'detestable', 'horrendous', 'regretful',
+        'nasty', 'disturbing', 'hateful', 'destructive', 'unfortunate', 'terrifying', 'horrible',
+        'repulsive', 'disgusting', 'unsatisfactory', 'embarrassing', 'failing', 'tragic', 'damaging',
+        'awful', 'unwanted', 'displeasing', 'unworthy', 'despicable', 'irritating', 'inferior',
+        'subpar', 'wretched', 'shameful', 'unacceptable', 'terrible', 'disastrous', 'toxic',
+        'frustrating', 'depressing', 'annoying', 'agonizing', 'dangerous', 'unreliable', 'untrustworthy',
+        'weak', 'cheating', 'failure', 'grief', 'hopeless', 'mournful', 'unpleasant', 'burdened',
+        'confused', 'chaotic', 'lousy', 'heartbreaking', 'vile', 'threatening', 'dejected', 'discouraging',
+        'sad', 'lonely', 'broken', 'worthless', 'reprehensible', 'untrustworthy', 'selfish', 'unfriendly',
+        'unfair', 'unjust', 'stressed', 'disorganized', 'tragic', 'obnoxious', 'displeasing', 'coldhearted',
+        'ungrateful', 'rude', 'murderous', 'distraught', 'vindictive', 'unreliable', 'cold', 'unfeeling',
+        'hostile', 'malicious', 'unloving', 'evil', 'unmotivated', 'disgusted', 'repelled', 'unethical',
+        'uncooperative', 'unreasonable', 'alienated', 'angry', 'insensitive', 'unwanted', 'incompetent'
+    ];
     
     // Convert text to lowercase
     $text = strtolower($text);
@@ -107,6 +141,30 @@ while ($stmt->fetch()) {
 }
 $stmt->close();
 
+// Fetch all comments for the sentiment analysis chart (not just the paginated ones)
+$allCommentsQuery = "
+    SELECT ee.comments
+    FROM event_evaluations ee
+    WHERE ee.event_id = ?
+";
+$stmt = $conn->prepare($allCommentsQuery);
+$stmt->bind_param("i", $eventId);
+$stmt->execute();
+$stmt->bind_result($comments);
+$allCommentsList = [];
+
+while ($stmt->fetch()) {
+    $allCommentsList[] = $comments;
+}
+$stmt->close();
+
+// Sentiment counts for the full event's comments (for the chart)
+$sentimentCounts = ['positive' => 0, 'negative' => 0, 'neutral' => 0];
+
+foreach ($allCommentsList as $commentText) {
+    $sentiment = getSentiment($commentText);
+    $sentimentCounts[$sentiment]++;
+}
 ?>
 
 <?php include_once('temp/header.php'); ?>
@@ -120,7 +178,7 @@ $stmt->close();
     <title>Event Comments - <?php echo htmlspecialchars($eventTitle); ?></title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-                body {
+        body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
@@ -197,7 +255,7 @@ $stmt->close();
         }
         .pagination .current-page {
             background-color: #055bb5;
-        }	
+        }    
     </style>
 </head>
 <body>
@@ -239,9 +297,9 @@ $stmt->close();
         <script>
             // Sentiment count for the graph
             const sentimentCounts = {
-                positive: <?php echo count(array_filter($commentsList, fn($c) => $c['sentiment'] == 'positive')); ?>,
-                negative: <?php echo count(array_filter($commentsList, fn($c) => $c['sentiment'] == 'negative')); ?>,
-                neutral: <?php echo count(array_filter($commentsList, fn($c) => $c['sentiment'] == 'neutral')); ?>
+                positive: <?php echo $sentimentCounts['positive']; ?>,
+                negative: <?php echo $sentimentCounts['negative']; ?>,
+                neutral: <?php echo $sentimentCounts['neutral']; ?>
             };
             
             const ctx = document.getElementById('sentimentChart').getContext('2d');
