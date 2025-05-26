@@ -29,7 +29,7 @@ $requestsPerDeptQuery = "
     FROM requests r 
     INNER JOIN users u ON r.user_id = u.id 
     $whereClause
-    GROUP BY u.department";
+    group by u.department";
 $requestsPerDeptResult = $conn->query($requestsPerDeptQuery);
 $departmentsRequests = [];
 $requestsCounts = [];
@@ -52,7 +52,7 @@ $attendeesPerDeptQuery = "
     FROM event_attendance ea 
     INNER JOIN users u ON ea.user_id = u.id 
     $whereClause
-    GROUP BY u.department";
+    group by u.department";
 $attendeesPerDeptResult = $conn->query($attendeesPerDeptQuery);
 $departmentsAttendees = [];
 $attendeesCounts = [];
@@ -141,7 +141,7 @@ while ($row = $attendeesPerDeptResult->fetch_assoc()) {
   <a href="admindash1.php"  class="active">Requests/Time</a>
   <a href="admindash2.php">Feedback Word Cloud</a>
   <a href="admindash3.php">Ratings/Department</a>
-  <a href="admindash4.php">Attendees/Group</a>
+  <a href="admindash4.php">Attendees/community</a>
 </section>
 
 <section class="filter-container">

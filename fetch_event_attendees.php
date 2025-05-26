@@ -7,7 +7,7 @@ $query = "
     COUNT(a.user_id) AS attendees_count
   FROM event_attendance a
   JOIN events e ON e.id = a.event_id
-  GROUP BY e.id
+  group by e.id
   ORDER BY attendees_count DESC
   LIMIT 5
 ";

@@ -1,16 +1,16 @@
 <?php
 require 'connecting/connect.php';
 
-$group = isset($_GET['group']) ? $_GET['group'] : '';
+$community = isset($_GET['community']) ? $_GET['community'] : '';
 $department = isset($_GET['department']) ? $_GET['department'] : '';
 
-$groupFilter = $group ? "AND groupp = ?" : '';
+$communityFilter = $community ? "AND community = ?" : '';
 $departmentFilter = $department ? "AND department = ?" : '';
 
 // Fetch total requests with filters
 $requestQueryStr = "SELECT COUNT(*) AS total_requests FROM requests WHERE 1=1";
-if ($group) {
-    $requestQueryStr .= " AND user_id IN (SELECT id FROM users WHERE groupp = ?)";
+if ($community) {
+    $requestQueryStr .= " AND user_id IN (SELECT id FROM users WHERE community = ?)";
 }
 if ($department) {
     $requestQueryStr .= " AND user_id IN (SELECT id FROM users WHERE department = ?)";
@@ -18,10 +18,10 @@ if ($department) {
 
 $requestQuery = $conn->prepare($requestQueryStr);
 
-if ($group && $department) {
-    $requestQuery->bind_param("ss", $group, $department);
-} elseif ($group) {
-    $requestQuery->bind_param("s", $group);
+if ($community && $department) {
+    $requestQuery->bind_param("ss", $community, $department);
+} elseif ($community) {
+    $requestQuery->bind_param("s", $community);
 } elseif ($department) {
     $requestQuery->bind_param("s", $department);
 }
@@ -33,18 +33,18 @@ $requestQuery->close();
 // Fetch number of requests per type with filters
 $requestTypeQueryStr = "
     SELECT 
-        COUNT(CASE WHEN user_id IN (SELECT id FROM users WHERE groupp = 'LGBTQ+') THEN 1 END) AS lgbtq_requests,
-        COUNT(CASE WHEN user_id IN (SELECT id FROM users WHERE groupp = 'PWD') THEN 1 END) AS pwd_requests,
-        COUNT(CASE WHEN user_id IN (SELECT id FROM users WHERE groupp = 'Pregnant') THEN 1 END) AS pregnant_requests
+        COUNT(CASE WHEN user_id IN (SELECT id FROM users WHERE community = 'LGBTQ+') THEN 1 END) AS lgbtq_requests,
+        COUNT(CASE WHEN user_id IN (SELECT id FROM users WHERE community = 'PWD') THEN 1 END) AS pwd_requests,
+        COUNT(CASE WHEN user_id IN (SELECT id FROM users WHERE community = 'Pregnant') THEN 1 END) AS pregnant_requests
     FROM requests
-    WHERE 1=1 $groupFilter $departmentFilter
+    WHERE 1=1 $communityFilter $departmentFilter
 ";
 
 $requestTypeQuery = $conn->prepare($requestTypeQueryStr);
-if ($group && $department) {
-    $requestTypeQuery->bind_param("ss", $group, $department);
-} elseif ($group) {
-    $requestTypeQuery->bind_param("s", $group);
+if ($community && $department) {
+    $requestTypeQuery->bind_param("ss", $community, $department);
+} elseif ($community) {
+    $requestTypeQuery->bind_param("s", $community);
 } elseif ($department) {
     $requestTypeQuery->bind_param("s", $department);
 }
@@ -58,18 +58,18 @@ $requestTypeQuery->close();
 // Fetch number of users per type with filters
 $userQueryStr = "
     SELECT 
-        COUNT(CASE WHEN groupp = 'LGBTQ+' THEN 1 END) AS lgbtq_count,
-        COUNT(CASE WHEN groupp = 'PWD' THEN 1 END) AS pwd_count,
-        COUNT(CASE WHEN groupp = 'Pregnant' THEN 1 END) AS pregnant_count
+        COUNT(CASE WHEN community = 'LGBTQ+' THEN 1 END) AS lgbtq_count,
+        COUNT(CASE WHEN community = 'PWD' THEN 1 END) AS pwd_count,
+        COUNT(CASE WHEN community = 'Pregnant' THEN 1 END) AS pregnant_count
     FROM users
-    WHERE 1=1 $groupFilter $departmentFilter
+    WHERE 1=1 $communityFilter $departmentFilter
 ";
 
 $userQuery = $conn->prepare($userQueryStr);
-if ($group && $department) {
-    $userQuery->bind_param("ss", $group, $department);
-} elseif ($group) {
-    $userQuery->bind_param("s", $group);
+if ($community && $department) {
+    $userQuery->bind_param("ss", $community, $department);
+} elseif ($community) {
+    $userQuery->bind_param("s", $community);
 } elseif ($department) {
     $userQuery->bind_param("s", $department);
 }
@@ -84,16 +84,16 @@ $userQuery->close();
 $monthlyQueryStr = "
     SELECT DATE_FORMAT(created_at, '%Y-%m') AS month, COUNT(*) AS count
     FROM requests
-    WHERE 1=1 $groupFilter $departmentFilter
-    GROUP BY month
+    WHERE 1=1 $communityFilter $departmentFilter
+    group by month
     ORDER BY month ASC
 ";
 
 $monthlyQuery = $conn->prepare($monthlyQueryStr);
-if ($group && $department) {
-    $monthlyQuery->bind_param("ss", $group, $department);
-} elseif ($group) {
-    $monthlyQuery->bind_param("s", $group);
+if ($community && $department) {
+    $monthlyQuery->bind_param("ss", $community, $department);
+} elseif ($community) {
+    $monthlyQuery->bind_param("s", $community);
 } elseif ($department) {
     $monthlyQuery->bind_param("s", $department);
 }

@@ -24,7 +24,7 @@ if ($user_id) {
 
         // Insert into the admin_archived_users table
         $insertQuery = $conn->prepare("INSERT INTO admin_archived_users 
-            (id, lastname, firstname, age, email, contact, address, department, course, yearr, section, groupp, username, password, gender, profilepic, registration_date, impairment) 
+            (id, lastname, firstname, age, email, contact, address, department, course, yearr, section, community, username, password, gender, profilepic, registration_date, impairment) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
         // Bind the parameters for insertion
@@ -40,7 +40,7 @@ if ($user_id) {
             $userData['course'], 
             $userData['yearr'], 
             $userData['section'], 
-            $userData['groupp'], 
+            $userData['community'], 
             $userData['username'], 
             $userData['password'], 
             $userData['gender'], 

@@ -12,7 +12,7 @@ $pastEventRatingsQuery = $conn->query("SELECT e.id, e.title, e.event_date, e.sta
     FROM event_evaluations ee
     JOIN events e ON ee.event_id = e.id
     WHERE e.event_date < NOW()
-    GROUP BY e.id");
+    group by e.id");
 
 $pastEventRatings = [];
 while ($row = $pastEventRatingsQuery->fetch_assoc()) {

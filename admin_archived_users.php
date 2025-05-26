@@ -7,19 +7,19 @@ require 'connecting/connect.php';
 $userQuery = $conn->query("SELECT * FROM admin_archived_users");
 $users = $userQuery->fetch_all(MYSQLI_ASSOC);
 
-// Fetch unique groups for filtering
-$groupQuery = $conn->query("SELECT DISTINCT groupp FROM admin_archived_users");
-$groups = $groupQuery->fetch_all(MYSQLI_ASSOC);
+// Fetch unique communitys for filtering
+$communityQuery = $conn->query("SELECT DISTINCT community FROM admin_archived_users");
+$communitys = $communityQuery->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <div class="user-management-container">
     <h1>Archived User Management</h1>
     <div class="filter-container">
         <input type="text" id="searchBox" placeholder="Search archived users...">
-        <select id="groupFilter">
-            <option value="">All Groups</option>
-            <?php foreach ($groups as $group) : ?>
-                <option value="<?= htmlspecialchars($group['groupp']) ?>"> <?= htmlspecialchars($group['groupp']) ?> </option>
+        <select id="communityFilter">
+            <option value="">All communitys</option>
+            <?php foreach ($communitys as $community) : ?>
+                <option value="<?= htmlspecialchars($community['community']) ?>"> <?= htmlspecialchars($community['community']) ?> </option>
             <?php endforeach; ?>
         </select>
     </div>
@@ -30,18 +30,18 @@ $groups = $groupQuery->fetch_all(MYSQLI_ASSOC);
                 <th>Last Name</th>
                 <th>First Name</th>
                 <th>Department</th>
-                <th>Group</th>
+                <th>community</th>
                 <th>Action</th>
             </tr>
         </thead>
         <tbody>
             <?php foreach ($users as $user) : ?>
-                <tr class="user-row" data-group="<?= htmlspecialchars($user['groupp']) ?>">
+                <tr class="user-row" data-community="<?= htmlspecialchars($user['community']) ?>">
                     <td><?= $user['id'] ?></td>
                     <td><?= htmlspecialchars($user['lastname']) ?></td>
                     <td><?= htmlspecialchars($user['firstname']) ?></td>
                     <td><?= htmlspecialchars($user['department']) ?></td>
-                    <td><?= htmlspecialchars($user['groupp']) ?></td>
+                    <td><?= htmlspecialchars($user['community']) ?></td>
                     <td>
                         <button class="action-btn view-btn" onclick='viewUser(<?= json_encode($user) ?>)'>
                             <i class="fas fa-eye"></i>
@@ -67,7 +67,7 @@ $groups = $groupQuery->fetch_all(MYSQLI_ASSOC);
                 <div class="modal-profile-info">
                     <h1 id="modal_fullname"></h1>
                     <h2 id="modal_course_department"></h2>
-                    <h3 id="modal_group"></h3>
+                    <h3 id="modal_community"></h3>
                 </div>
             </div>
         </div>
@@ -95,14 +95,14 @@ $groups = $groupQuery->fetch_all(MYSQLI_ASSOC);
         });
     });
 
-    // Group Filter
-    document.getElementById('groupFilter').addEventListener('change', function () {
-        let selectedGroup = this.value.toLowerCase();
+    // community Filter
+    document.getElementById('communityFilter').addEventListener('change', function () {
+        let selectedcommunity = this.value.toLowerCase();
         let rows = document.querySelectorAll('#usersTable tbody tr');
         
         rows.forEach(row => {
-            let group = row.getAttribute('data-group').toLowerCase();
-            if (!selectedGroup || group === selectedGroup) {
+            let community = row.getAttribute('data-community').toLowerCase();
+            if (!selectedcommunity || community === selectedcommunity) {
                 row.style.display = '';
             } else {
                 row.style.display = 'none';
@@ -130,8 +130,8 @@ $groups = $groupQuery->fetch_all(MYSQLI_ASSOC);
         // Concatenate course and department
         document.getElementById("modal_course_department").innerText = `${user.course || 'N/A'}, ${user.department || 'N/A'}`;
 
-        // Bind group
-        document.getElementById("modal_group").innerText = `${user.groupp || 'N/A'}`;
+        // Bind community
+        document.getElementById("modal_community").innerText = `${user.community || 'N/A'}`;
 
         // Show the modal
         let modal = document.getElementById("userModal");
@@ -175,7 +175,7 @@ $groups = $groupQuery->fetch_all(MYSQLI_ASSOC);
         justify-content: space-between;
         margin-bottom: 10px;
     }
-    #searchBox, #groupFilter {
+    #searchBox, #communityFilter {
         padding: 8px;
         border: 1px solid #ccc;
         border-radius: 4px;

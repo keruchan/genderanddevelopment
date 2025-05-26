@@ -331,7 +331,7 @@
 .fa.fa-arrows-alt:before {
   content: "\f31e"; }
 
-.fa.fa-group:before {
+.fa.fa-community:before {
   content: "\f0c0"; }
 
 .fa.fa-chain:before {
@@ -1565,11 +1565,11 @@
 .fa.fa-battery-0:before {
   content: "\f244"; }
 
-.fa.fa-object-group {
+.fa.fa-object-community {
   font-family: 'Font Awesome 5 Free';
   font-weight: 400; }
 
-.fa.fa-object-ungroup {
+.fa.fa-object-uncommunity {
   font-family: 'Font Awesome 5 Free';
   font-weight: 400; }
 

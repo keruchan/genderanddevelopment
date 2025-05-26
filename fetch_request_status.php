@@ -12,7 +12,7 @@ if ($selectedMonth && $selectedYear) {
         SELECT status, COUNT(*) AS count
         FROM requests
         WHERE MONTHNAME(created_at) = ? AND YEAR(created_at) = ?
-        GROUP BY status
+        group by status
     ");
     $requestStatusQuery->bind_param('si', $selectedMonth, $selectedYear);
     $requestStatusQuery->execute();
@@ -23,7 +23,7 @@ if ($selectedMonth && $selectedYear) {
         SELECT status, COUNT(*) AS count
         FROM requests
         WHERE MONTHNAME(created_at) = ?
-        GROUP BY status
+        group by status
     ");
     $requestStatusQuery->bind_param('s', $selectedMonth);
     $requestStatusQuery->execute();
@@ -34,14 +34,14 @@ if ($selectedMonth && $selectedYear) {
         SELECT status, COUNT(*) AS count
         FROM requests
         WHERE YEAR(created_at) = ?
-        GROUP BY status
+        group by status
     ");
     $requestStatusQuery->bind_param('i', $selectedYear);
     $requestStatusQuery->execute();
     $requestStatusQuery->store_result();
 } else {
     // If no filters are applied, fetch all data
-    $requestStatusQuery = $conn->query("SELECT status, COUNT(*) AS count FROM requests GROUP BY status");
+    $requestStatusQuery = $conn->query("SELECT status, COUNT(*) AS count FROM requests group by status");
 }
 
 $statusLabels = [];

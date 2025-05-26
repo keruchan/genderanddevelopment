@@ -15,8 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $contact = $_POST['contact'];
     $address = $_POST['address'];
     $gender = $_POST['gender'];
-    $groupp = $_POST['groupp'];
-    $impairment = $_POST['impairment'] ?? ''; // For PWD group, impairment will be required
+    $community = $_POST['community'];
+    $impairment = $_POST['impairment'] ?? ''; // For PWD community, impairment will be required
     $profilePicPath = NULL;
 
     // Check if profile picture is uploaded
@@ -57,9 +57,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     // Insert user data into the database
-    $stmt = $conn->prepare("INSERT INTO users (firstname, lastname, age, email, contact, address, gender, groupp, impairment, profilepic) 
+    $stmt = $conn->prepare("INSERT INTO users (firstname, lastname, age, email, contact, address, gender, community, impairment, profilepic) 
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("ssissssss", $firstname, $lastname, $age, $email, $contact, $address, $gender, $groupp, $impairment, $profilePicPath);
+    $stmt->bind_param("ssissssss", $firstname, $lastname, $age, $email, $contact, $address, $gender, $community, $impairment, $profilePicPath);
 
     if ($stmt->execute()) {
         echo "<script>
@@ -136,8 +136,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
             <div>
                 <label class="required-label">
-                    <select id="groupSelect" name="groupp" class="text-input" required>
-                        <option value="" disabled selected>Select Group</option>
+                    <select id="communitySelect" name="community" class="text-input" required>
+                        <option value="" disabled selected>Select community</option>
                         <option value="LGBTQ+">LGBTQ+</option>
                         <option value="Pregnant">Pregnant</option>
                         <option value="PWD">PWD</option>
@@ -198,13 +198,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const groupSelect = document.getElementById("groupSelect");
+        const communitySelect = document.getElementById("communitySelect");
         const impairmentDiv = document.getElementById("impairmentDiv");
         const impairmentSelect = document.getElementById("impairmentSelect");
         const otherImpairmentDiv = document.getElementById("otherImpairmentDiv");
 
         // Toggle the impairment field visibility when "PWD" is selected
-        groupSelect.addEventListener("change", function() {
+        communitySelect.addEventListener("change", function() {
             if (this.value === "PWD") {
                 impairmentDiv.style.display = "block";
                 impairmentSelect.required = true;

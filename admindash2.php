@@ -160,7 +160,7 @@ $jsWordListString = implode(',', $jsWordList);
   <a href="admindash1.php">Requests/Time</a>
   <a href="admindash2.php"  class="active">Feedback Word Cloud</a>
   <a href="admindash3.php">Ratings/Department</a>
-  <a href="admindash4.php">Attendees/Group</a>
+  <a href="admindash4.php">Attendees/community</a>
 </section>
 <section class="chart-section">
   <div class="chart-container" id="wordCloudWrapper">

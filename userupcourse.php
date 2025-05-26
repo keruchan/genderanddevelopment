@@ -9,9 +9,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $_SESSION['contact'] = $_POST['contact'];
     $_SESSION['address'] = $_POST['address'];
     $_SESSION['gender'] = $_POST['gender'];
-    $_SESSION['groupp'] = $_POST['groupp'];
+    $_SESSION['community'] = $_POST['community'];
 
-    if ($_POST['groupp'] == 'PWD') {
+    if ($_POST['community'] == 'PWD') {
         $_SESSION['impairment'] = $_POST['impairment'] . ' - ' . $_POST['other_impairment'];
 
     }

@@ -123,18 +123,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         margin-bottom: 20px;
     }
 
-    .form-group {
+    .form-community {
         margin-bottom: 20px;
     }
 
-    .form-group label {
+    .form-community label {
         display: block;
         margin-bottom: 8px;
         font-weight: 600;
         font-size: 14px;
     }
 
-    .form-group input, .form-group select, .form-group button {
+    .form-community input, .form-community select, .form-community button {
         width: 100%;
         padding: 12px;
         border: 1px solid #ccc;
@@ -143,12 +143,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         box-sizing: border-box;
     }
 
-    .form-group input:focus, .form-group select:focus {
+    .form-community input:focus, .form-community select:focus {
         border-color: #007bff;
         outline: none;
     }
 
-    .form-group button {
+    .form-community button {
         background-color: #007bff;
         color: white;
         border: none;
@@ -157,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         transition: background-color 0.3s ease;
     }
 
-    .form-group button:hover {
+    .form-community button:hover {
         background-color: #0056b3;
     }
 
@@ -180,23 +180,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="container">
     <h2>Update Username and Password</h2>
     <form action="update_password.php" method="POST">
-        <div class="form-group">
+        <div class="form-community">
             <label for="new_username">New Username (Optional)</label>
             <input type="text" name="new_username" id="new_username" class="form-control" 
                    value="<?php echo htmlspecialchars($user['username']); ?>">
         </div>
 
-        <div class="form-group">
+        <div class="form-community">
             <label for="old_password">Old Password *</label>
             <input type="password" name="old_password" id="old_password" class="form-control" required>
         </div>
 
-        <div class="form-group">
+        <div class="form-community">
             <label for="new_password">New Password *</label>
             <input type="password" name="new_password" id="new_password" class="form-control" required>
         </div>
 
-        <div class="form-group">
+        <div class="form-community">
             <label for="confirm_password">Confirm New Password *</label>
             <input type="password" name="confirm_password" id="confirm_password" class="form-control" required>
         </div>

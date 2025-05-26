@@ -176,8 +176,8 @@
             <td><?php echo !empty($user['section']) ? $user['section'] : 'Not Available'; ?></td>
         </tr>
         <tr>
-            <th>Group</th>
-            <td><?php echo !empty($user['groupp']) ? $user['groupp'] : 'Not Available'; ?></td>
+            <th>community</th>
+            <td><?php echo !empty($user['community']) ? $user['community'] : 'Not Available'; ?></td>
         </tr>
         <tr>
             <th>Impairment</th>

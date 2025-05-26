@@ -16,7 +16,7 @@ $predictedMonths = isset($_GET['predict']) ? (int)$_GET['predict'] : 1;
 $currentDate = new DateTime("2025-05-01");
 $labels = [];
 $yearLabels = [];
-$genderGroups = ['LGBTQ+', 'Pregnant', 'PWD'];
+$gendercommunitys = ['LGBTQ+', 'Pregnant', 'PWD'];
 $data = [
   'LGBTQ+' => [],
   'Pregnant' => [],
@@ -38,13 +38,13 @@ for ($i = 11; $i >= 0; $i--) {
         $maxYear = $year;
     }
 
-    foreach ($genderGroups as $group) {
-        $stmt = $conn->prepare("SELECT COUNT(*) as count FROM event_attendance ea INNER JOIN users u ON ea.user_id = u.id WHERE u.groupp = ? AND MONTH(ea.attendance_date) = ? AND YEAR(ea.attendance_date) = ?");
-        $stmt->bind_param("sii", $group, $month, $year);
+    foreach ($gendercommunitys as $community) {
+        $stmt = $conn->prepare("SELECT COUNT(*) as count FROM event_attendance ea INNER JOIN users u ON ea.user_id = u.id WHERE u.community = ? AND MONTH(ea.attendance_date) = ? AND YEAR(ea.attendance_date) = ?");
+        $stmt->bind_param("sii", $community, $month, $year);
         $stmt->execute();
         $result = $stmt->get_result();
         $count = $result ? $result->fetch_assoc()['count'] : 0;
-        $data[$group][] = (int)$count;
+        $data[$community][] = (int)$count;
         $stmt->close();
     }
 }
@@ -57,9 +57,9 @@ for ($p = 0; $p < $predictedMonths; $p++) {
         $nextYear++;
     }
 
-    foreach ($genderGroups as $group) {
-        $lastThree = array_slice($data[$group], -3);
-        $data[$group][] = round(array_sum($lastThree) / max(count($lastThree), 1));
+    foreach ($gendercommunitys as $community) {
+        $lastThree = array_slice($data[$community], -3);
+        $data[$community][] = round(array_sum($lastThree) / max(count($lastThree), 1));
     }
 
     $labels[] = date('F', mktime(0, 0, 0, $nextMonth, 1));
@@ -68,9 +68,9 @@ for ($p = 0; $p < $predictedMonths; $p++) {
     $maxYear = $nextYear;
 }
 
-$datasets = array_map(function ($group) use ($data) {
-    return $data[$group];
-}, $genderGroups);
+$datasets = array_map(function ($community) use ($data) {
+    return $data[$community];
+}, $gendercommunitys);
 ?>
 
 <!DOCTYPE html>
@@ -178,7 +178,7 @@ $datasets = array_map(function ($group) use ($data) {
   <a href="admindash1.php">Requests/Time</a>
   <a href="admindash2.php">Feedback Word Cloud</a>
   <a href="admindash3.php">Ratings/Department</a>
-  <a href="admindash4.php" class="active">Attendees/Group</a>
+  <a href="admindash4.php" class="active">Attendees/community</a>
 </section>
 <div class="predict-form">
   <form method="GET">
@@ -195,7 +195,7 @@ $datasets = array_map(function ($group) use ($data) {
 <div class="legend-note">Dashed lines represent predicted data based on the last 3 months' average.</div>
 
 <div class="chart-container">
-  <h2 style="text-align:center; font-weight:700; color:#333;">Number of Attendees per Group</h2>
+  <h2 style="text-align:center; font-weight:700; color:#333;">Number of Attendees per community</h2>
   <canvas id="comboChart"></canvas>
   <div class="year-labels" id="yearLabels"></div>
 </div>

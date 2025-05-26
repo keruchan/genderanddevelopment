@@ -14,28 +14,26 @@ $monthlyData = include('fetch_monthly_requests.php');
 $months = $monthlyData['months'];
 $requestsPerMonth = $monthlyData['requestsPerMonth'];
 
-// Include the new fetch file to get attendees per group
-$attendeesData = include('fetch_attendees_per_group.php');
-$groupTypes = $attendeesData['groupTypes'];
+// Include the new fetch file to get attendees per community
+$attendeesData = include('fetch_attendees_per_community.php');
+$communityTypes = $attendeesData['communityTypes'];
 $attendeesCounts = $attendeesData['attendeesCounts'];
 
-// Fetching user groups data
-$groupData = include('fetch_user_groups.php');
-$groupTypes = $groupData['groupTypes'];
-$groupCounts = $groupData['groupCounts'];
+// Fetching user communitys data
+$communityData = include('fetch_user_communitys.php');
+$communityTypes = $communityData['communityTypes'];
+$communityCounts = $communityData['communityCounts'];
 
-// Fetching group type distribution
-$groupRatingsData = include('fetch_group_ratings.php');
-$groupTypes = $groupRatingsData['groupTypes'];
-$groupAverageRatings = $groupRatingsData['groupAverageRatings'];
+// Fetching community type distribution
+$communityRatingsData = include('fetch_community_ratings.php');
+$communityTypes = $communityRatingsData['communityTypes'];
+$communityAverageRatings = $communityRatingsData['communityAverageRatings'];
 
 // Function for forecasting moving average
 function forecastMovingAverage($data, $windowSize) {
-    // Check if the data array is empty before proceeding
     if (empty($data)) {
-        return 0;  // Return 0 or any default value in case there's no data
+        return 0;
     }
-    
     $window = array_slice($data, -$windowSize);
     $forecast = array_sum($window) / count($window);
     return round($forecast);
@@ -76,6 +74,10 @@ $avgOrganization = $evaluationsData['avgOrganization'];
 $avgMaterials = $evaluationsData['avgMaterials'];
 $avgSpeaker = $evaluationsData['avgSpeaker'];
 $avgOverall = $evaluationsData['avgOverall'];
+
+// Filter by month and year if set in the URL
+$monthFilter = isset($_GET['month']) ? $_GET['month'] : '';
+$yearFilter = isset($_GET['year']) ? $_GET['year'] : '';
 ?>
 
 <!DOCTYPE html>
@@ -94,7 +96,7 @@ $avgOverall = $evaluationsData['avgOverall'];
     .card p { color: gray; margin: 0; }
     .charts { display: flex; flex-wrap: wrap; gap: 20px; padding: 20px; }
     .chart-container { flex: 1 1 300px; min-width: 280px; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .chart-container canvas { width: 100% !important; height: 190px !important; }
+    .chart-container canvas { width: 100% !important; height: 300px !important; }
     .filter-container {
       background: #f9f9f9;
       padding: 20px;
@@ -121,6 +123,27 @@ $avgOverall = $evaluationsData['avgOverall'];
     .filter-container button:hover {
       background-color: #45a049;
     }
+    .dashboard-nav {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin: 1rem auto;
+      padding: 1rem;
+      background: #d0eaff;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .dashboard-nav a {
+      color: #333;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+    }
+    .dashboard-nav a.active, .dashboard-nav a:hover {
+      background: #4CAF50;
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -131,39 +154,35 @@ $avgOverall = $evaluationsData['avgOverall'];
   <div class="card"><h2><?= $totalEvents; ?></h2><p>Total Events</p></div>
   <div class="card"><h2><?= $totalPosts; ?></h2><p>Total Posts</p></div>
 </section>
-
+<section class="dashboard-nav">
+  <a href="admin.php"   class="active">Summary</a>
+  <a href="admindash1.php">Requests/Time</a>
+  <a href="admindash2.php">Feedback Word Cloud</a>
+  <a href="admindash3.php">Ratings/Department</a>
+  <a href="admindash4.php">Attendees/community</a>
+</section>
 <!-- Filters for Graph 1 and 2 (Requests per Month and Request Status) -->
 <section class="filter-container">
   <form method="GET" style="display: flex; gap: 20px; align-items: center;">
     <label for="month" style="font-weight: bold;">Month:</label>
     <select name="month" id="month">
       <option value="">All Months</option>
-      <option value="January" <?= isset($_GET['month']) && $_GET['month'] == 'January' ? 'selected' : '' ?>>January</option>
-      <option value="February" <?= isset($_GET['month']) && $_GET['month'] == 'February' ? 'selected' : '' ?>>February</option>
-      <option value="March" <?= isset($_GET['month']) && $_GET['month'] == 'March' ? 'selected' : '' ?>>March</option>
-      <option value="April" <?= isset($_GET['month']) && $_GET['month'] == 'April' ? 'selected' : '' ?>>April</option>
-      <option value="May" <?= isset($_GET['month']) && $_GET['month'] == 'May' ? 'selected' : '' ?>>May</option>
-      <option value="June" <?= isset($_GET['month']) && $_GET['month'] == 'June' ? 'selected' : '' ?>>June</option>
-      <option value="July" <?= isset($_GET['month']) && $_GET['month'] == 'July' ? 'selected' : '' ?>>July</option>
-      <option value="August" <?= isset($_GET['month']) && $_GET['month'] == 'August' ? 'selected' : '' ?>>August</option>
-      <option value="September" <?= isset($_GET['month']) && $_GET['month'] == 'September' ? 'selected' : '' ?>>September</option>
-      <option value="October" <?= isset($_GET['month']) && $_GET['month'] == 'October' ? 'selected' : '' ?>>October</option>
-      <option value="November" <?= isset($_GET['month']) && $_GET['month'] == 'November' ? 'selected' : '' ?>>November</option>
-      <option value="December" <?= isset($_GET['month']) && $_GET['month'] == 'December' ? 'selected' : '' ?>>December</option>
+      <?php foreach (['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] as $month): ?>
+        <option value="<?= $month; ?>" <?= $month === $monthFilter ? 'selected' : ''; ?>><?= $month; ?></option>
+      <?php endforeach; ?>
     </select>
 
     <label for="year" style="font-weight: bold;">Year:</label>
     <select name="year" id="year">
       <option value="">All Years</option>
-      <option value="2025" <?= isset($_GET['year']) && $_GET['year'] == '2025' ? 'selected' : '' ?>>2025</option>
-      <option value="2024" <?= isset($_GET['year']) && $_GET['year'] == '2024' ? 'selected' : '' ?>>2024</option>
-      <option value="2023" <?= isset($_GET['year']) && $_GET['year'] == '2023' ? 'selected' : '' ?>>2023</option>
+      <?php foreach (['2025', '2024', '2023'] as $year): ?>
+        <option value="<?= $year; ?>" <?= $year === $yearFilter ? 'selected' : ''; ?>><?= $year; ?></option>
+      <?php endforeach; ?>
     </select>
 
     <button type="submit">Apply Filters</button>
   </form>
 </section>
-
 
 <section class="charts">
   <div class="chart-container"><h3>Requests (With Forecasted Month)</h3><canvas id="requestsChart"></canvas></div>
@@ -173,6 +192,9 @@ $avgOverall = $evaluationsData['avgOverall'];
 <section class="charts">
   <div class="chart-container"><h3>Attendees per Event</h3><canvas id="attendeesChart"></canvas></div>
   <div class="chart-container"><h3>Highest Rated Events</h3><canvas id="ratingsChart"></canvas></div>
+</section>
+
+<section class="charts">
   <div class="chart-container">
     <h3>Event Evaluation (Average Ratings)</h3>
     <form method="GET" style="margin-bottom: 10px;">
@@ -185,28 +207,12 @@ $avgOverall = $evaluationsData['avgOverall'];
     </form>
     <canvas id="evaluationChart"></canvas>
   </div>
+  <div class="chart-container"><h3>Total Attendees per community</h3><canvas id="attendeesPercommunityChart"></canvas></div>
 </section>
 
-<!-- New section for additional charts -->
 <section class="charts">
-  <!-- Total Attendees per Group (Bar Chart) -->
-  <div class="chart-container">
-    <h3>Total Attendees per Group</h3>
-    <canvas id="attendeesPerGroupChart"></canvas>
-  </div>
-
-<!-- Ratings per Group (Bar Chart) -->
-<div class="chart-container">
-  <h3>Ratings per Group</h3>
-  <canvas id="ratingsPerEventChart"></canvas>
-</div>
-
-
-  <!-- Group Type Distribution (Doughnut Chart) -->
-  <div class="chart-container">
-    <h3>Group Type Distribution</h3>
-    <canvas id="groupTypeDistributionChart"></canvas>
-  </div>
+  <div class="chart-container"><h3>Ratings per community</h3><canvas id="ratingsPerEventChart"></canvas></div>
+  <div class="chart-container"><h3>community Type Distribution</h3><canvas id="communityTypeDistributionChart"></canvas></div>
 </section>
 
 <script>
@@ -334,15 +340,15 @@ new Chart(evaluationCtx, {
   }
 });
 
-// Attendees per Group (Bar Chart)
-const attendeesPerGroupCtx = document.getElementById('attendeesPerGroupChart').getContext('2d');
-new Chart(attendeesPerGroupCtx, {
+// Attendees per community (Bar Chart)
+const attendeesPercommunityCtx = document.getElementById('attendeesPercommunityChart').getContext('2d');
+new Chart(attendeesPercommunityCtx, {
   type: 'bar',
   data: {
-    labels: <?= json_encode($groupTypes) ?>,  // Dynamically fetched group types
+    labels: <?= json_encode($communityTypes) ?>,  // Dynamically fetched community types
     datasets: [{
       label: 'Total Attendees',
-      data: <?= json_encode($attendeesCounts) ?>,  // Dynamically fetched attendee counts per group
+      data: <?= json_encode($attendeesCounts) ?>,  // Dynamically fetched attendee counts per community
       backgroundColor: 'rgba(54, 162, 235, 0.7)'  // You can adjust the color as needed
     }]
   },
@@ -357,15 +363,15 @@ new Chart(attendeesPerGroupCtx, {
 });
 
 
-// Ratings per Group (Bar Chart)
-const ratingsPerGroupCtx = document.getElementById('ratingsPerEventChart').getContext('2d');
-new Chart(ratingsPerGroupCtx, {
+// Ratings per community (Bar Chart)
+const ratingsPercommunityCtx = document.getElementById('ratingsPerEventChart').getContext('2d');
+new Chart(ratingsPercommunityCtx, {
   type: 'bar',
   data: {
-    labels: <?= json_encode($groupTypes) ?>,  // Dynamically fetched group types
+    labels: <?= json_encode($communityTypes) ?>,  // Dynamically fetched community types
     datasets: [{
-      label: 'Average Rating per Group',  // Change label to reflect "Ratings per Group"
-      data: <?= json_encode($groupAverageRatings) ?>,  // Dynamically fetched average ratings per group
+      label: 'Average Rating per community',  // Change label to reflect "Ratings per community"
+      data: <?= json_encode($communityAverageRatings) ?>,  // Dynamically fetched average ratings per community
       backgroundColor: 'rgba(75, 192, 192, 0.7)'  // You can adjust the color as needed
     }]
   },
@@ -380,17 +386,17 @@ new Chart(ratingsPerGroupCtx, {
 });
 
 
-// Group Type Distribution (Doughnut Chart)
+// community Type Distribution (Doughnut Chart)
 // Check if data exists before creating the chart
-if (<?= json_encode($groupTypes) ?>.length > 0 && <?= json_encode($groupCounts) ?>.length > 0) {
-    const groupTypeDistributionCtx = document.getElementById('groupTypeDistributionChart').getContext('2d');
-    new Chart(groupTypeDistributionCtx, {
+if (<?= json_encode($communityTypes) ?>.length > 0 && <?= json_encode($communityCounts) ?>.length > 0) {
+    const communityTypeDistributionCtx = document.getElementById('communityTypeDistributionChart').getContext('2d');
+    new Chart(communityTypeDistributionCtx, {
       type: 'doughnut',
       data: {
-        labels: <?= json_encode($groupTypes) ?>,  // Dynamically fetched group types
+        labels: <?= json_encode($communityTypes) ?>,  // Dynamically fetched community types
         datasets: [{
-          label: 'Group Type Distribution',
-          data: <?= json_encode($groupCounts) ?>,  // Dynamically fetched group counts
+          label: 'community Type Distribution',
+          data: <?= json_encode($communityCounts) ?>,  // Dynamically fetched community counts
           backgroundColor: ['red', 'blue', 'green', 'yellow'] // You can adjust colors if needed
         }]
       },

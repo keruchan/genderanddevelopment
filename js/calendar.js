@@ -5611,7 +5611,7 @@
             var segment;
             var rowI;
     
-            // group segments by row
+            // community segments by row
             for (segmentI=0; segmentI<segments.length; segmentI++) {
                 segment = segments[segmentI];
                 rowI = segment.row;

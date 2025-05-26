@@ -57,18 +57,18 @@ if ($result->num_rows > 0) {
         margin-bottom: 20px;
     }
 
-    .form-group {
+    .form-community {
         margin-bottom: 20px;
     }
 
-    .form-group label {
+    .form-community label {
         display: block;
         margin-bottom: 8px;
         font-weight: 600;
         font-size: 14px;
     }
 
-    .form-group input, .form-group select, .form-group button {
+    .form-community input, .form-community select, .form-community button {
         width: 100%;
         padding: 12px;
         border: 1px solid #ccc;
@@ -77,12 +77,12 @@ if ($result->num_rows > 0) {
         box-sizing: border-box;
     }
 
-    .form-group input:focus, .form-group select:focus {
+    .form-community input:focus, .form-community select:focus {
         border-color: #007bff;
         outline: none;
     }
 
-    .form-group button {
+    .form-community button {
         background-color: #007bff;
         color: white;
         border: none;
@@ -91,29 +91,29 @@ if ($result->num_rows > 0) {
         transition: background-color 0.3s ease;
     }
 
-    .form-group button:hover {
+    .form-community button:hover {
         background-color: #0056b3;
     }
 
-    .form-group input[type="file"] {
+    .form-community input[type="file"] {
         border: none;
         padding: 10px 12px;
     }
 
-    .form-group input[type="number"], .form-group input[type="text"], .form-group input[type="email"], .form-group select {
+    .form-community input[type="number"], .form-community input[type="text"], .form-community input[type="email"], .form-community select {
         background-color: #f8f9fa;
     }
 
-    .form-group input[type="number"]:focus, .form-group input[type="text"]:focus, .form-group input[type="email"]:focus, .form-group select:focus {
+    .form-community input[type="number"]:focus, .form-community input[type="text"]:focus, .form-community input[type="email"]:focus, .form-community select:focus {
         background-color: #ffffff;
     }
 
-    .form-group #impairment-group {
+    .form-community #impairment-community {
         display: none;
         margin-top: 10px;
     }
 
-    .form-group button:disabled {
+    .form-community button:disabled {
         background-color: #ccc;
         cursor: not-allowed;
     }
@@ -136,82 +136,82 @@ if ($result->num_rows > 0) {
 <div class="container">
     <h2>Update User Information</h2>
     <form action="user_update.php" method="POST" enctype="multipart/form-data" 
-          oninput="document.getElementById('impairment-group').style.display = (document.getElementById('group').value === 'PWD') ? 'block' : 'none'">
+          oninput="document.getElementById('impairment-community').style.display = (document.getElementById('community').value === 'PWD') ? 'block' : 'none'">
 
-        <div class="form-group">
+        <div class="form-community">
             <label for="lastname">Last Name</label>
             <input type="text" name="lastname" id="lastname" class="form-control" 
                    value="<?php echo htmlspecialchars($user['lastname']); ?>" required>
         </div>
         
-        <div class="form-group">
+        <div class="form-community">
             <label for="firstname">First Name</label>
             <input type="text" name="firstname" id="firstname" class="form-control" 
                    value="<?php echo htmlspecialchars($user['firstname']); ?>" required>
         </div>
         
-        <div class="form-group">
+        <div class="form-community">
             <label for="age">Age</label>
             <input type="number" name="age" id="age" class="form-control" 
                    value="<?php echo htmlspecialchars($user['age']); ?>" required>
         </div>
         
-        <div class="form-group">
+        <div class="form-community">
             <label for="email">Email</label>
             <input type="email" name="email" id="email" class="form-control" 
                    value="<?php echo htmlspecialchars($user['email']); ?>" required>
         </div>
         
-        <div class="form-group">
+        <div class="form-community">
             <label for="contact">Contact</label>
             <input type="text" name="contact" id="contact" class="form-control" 
                    value="<?php echo htmlspecialchars($user['contact']); ?>" required>
         </div>
         
-        <div class="form-group">
+        <div class="form-community">
             <label for="address">Address</label>
             <input type="text" name="address" id="address" class="form-control" 
                    value="<?php echo htmlspecialchars($user['address']); ?>" required>
         </div>
         
-        <div class="form-group">
+        <div class="form-community">
             <label for="department">Department</label>
             <input type="text" name="department" id="department" class="form-control" 
                    value="<?php echo htmlspecialchars($user['department']); ?>" required>
         </div>
         
-        <div class="form-group">
+        <div class="form-community">
             <label for="course">Course</label>
             <input type="text" name="course" id="course" class="form-control" 
                    value="<?php echo htmlspecialchars($user['course']); ?>" required>
         </div>
         
-        <div class="form-group">
+        <div class="form-community">
             <label for="year">Year</label>
             <input type="text" name="year" id="year" class="form-control" 
                    value="<?php echo htmlspecialchars($user['yearr']); ?>" required>
         </div>
         
-        <div class="form-group">
+        <div class="form-community">
             <label for="section">Section</label>
             <input type="text" name="section" id="section" class="form-control" 
                    value="<?php echo htmlspecialchars($user['section']); ?>" required>
         </div>
         
-        <div class="form-group">
-            <label for="group">Group</label>
-            <input type="text" name="group" id="group" class="form-control" 
-                   value="<?php echo htmlspecialchars($user['groupp']); ?>" required>
+        <div class="form-community">
+            <label for="community">community</label>
+            <input type="text" name="community" id="community" class="form-control" 
+                   value="<?php echo htmlspecialchars($user['community']); ?>" required>
         </div>
         
-        <div class="form-group" id="impairment-group" style="display: <?php echo (strtoupper($user['groupp']) === 'PWD') ? 'block' : 'none'; ?>;">
+        <div class="form-community" id="impairment-community" style="display: <?php echo (strtoupper($user['community']) === 'PWD') ? 'block' : 'none'; ?>;">
     <label for="impairment">Impairment</label>
     <input type="text" name="impairment" id="impairment" class="form-control" 
            value="<?php echo htmlspecialchars($user['impairment']); ?>">
 </div>
 
         
-        <div class="form-group">
+        <div class="form-community">
             <label for="gender">Gender</label>
             <select name="gender" id="gender" class="form-control">
                 <option value="male" <?php echo ($user['gender'] === 'male') ? 'selected' : ''; ?>>Male</option>
@@ -220,7 +220,7 @@ if ($result->num_rows > 0) {
             </select>
         </div>
         
-        <div class="form-group">
+        <div class="form-community">
             <label for="profilepic">Profile Picture</label>
             <input type="file" name="profilepic" id="profilepic" class="form-control">
         </div>
@@ -259,7 +259,7 @@ if (isset($_POST["update"])) {
     $course = trim($_POST["course"]);
     $yearr = trim($_POST["year"]);
     $section = trim($_POST["section"]);
-    $groupp = trim($_POST["group"]);
+    $community = trim($_POST["community"]);
     $gender = $_POST["gender"];
     $impair = trim($_POST["impairment"]);
     $profilePicPath = NULL;
@@ -328,13 +328,13 @@ if (isset($_POST["update"])) {
 
     try {
         // Update User Data
-        $stmt = $conn->prepare("UPDATE users SET lastname=?, firstname=?, age=?, email=?, contact=?, address=?, department=?, course=?, yearr=?, section=?, groupp=?, gender=?, impairment=?, profilepic=? WHERE id=?");
+        $stmt = $conn->prepare("UPDATE users SET lastname=?, firstname=?, age=?, email=?, contact=?, address=?, department=?, course=?, yearr=?, section=?, community=?, gender=?, impairment=?, profilepic=? WHERE id=?");
 
         if (!$stmt) {
             throw new Exception("Database error! Please try again.");
         }
 
-        $stmt->bind_param("ssisssssssssssi", $lastname, $firstname, $age, $email, $contact, $address, $department, $course, $yearr, $section, $groupp, $gender, $impair, $profilePicPath, $user_id);
+        $stmt->bind_param("ssisssssssssssi", $lastname, $firstname, $age, $email, $contact, $address, $department, $course, $yearr, $section, $community, $gender, $impair, $profilePicPath, $user_id);
         if (!$stmt->execute()) {
             throw new Exception("Update failed. Try again!");
         }

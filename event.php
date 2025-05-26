@@ -214,7 +214,7 @@
                     <td><input type="radio" name="overall_2" value="1"></td>
                 </tr>
             </table>
-            <div class="form-group">
+            <div class="form-community">
                 <label>Comments and Suggestions:</label>
                 <textarea name="comments"></textarea>
             </div>

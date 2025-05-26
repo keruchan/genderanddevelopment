@@ -14,21 +14,6 @@ $monthlyData = include('fetch_monthly_requests.php');
 $months = $monthlyData['months'];
 $requestsPerMonth = $monthlyData['requestsPerMonth'];
 
-// Include the new fetch file to get attendees per group
-$attendeesData = include('fetch_attendees_per_group.php');
-$groupTypes = $attendeesData['groupTypes'];
-$attendeesCounts = $attendeesData['attendeesCounts'];
-
-// Fetching user groups data
-$groupData = include('fetch_user_groups.php');
-$groupTypes = $groupData['groupTypes'];
-$groupCounts = $groupData['groupCounts'];
-
-// Fetching group type distribution
-$groupRatingsData = include('fetch_group_ratings.php');
-$groupTypes = $groupRatingsData['groupTypes'];
-$groupAverageRatings = $groupRatingsData['groupAverageRatings'];
-
 // Function for forecasting moving average
 function forecastMovingAverage($data, $windowSize) {
     if (empty($data)) {
@@ -52,28 +37,7 @@ $nextMonth = date('M', mktime(0, 0, 0, $currentMonthIndex + 2, 1));
 $months[] = $nextMonth;
 $requestsPerMonth[] = $forecastedRequest;
 
-// Fetching request status data (approved, pending, etc.)
-$requestStatusData = include('fetch_request_status.php');
-$statusLabels = $requestStatusData['statusLabels'];
-$statusCounts = $requestStatusData['statusCounts'];
-
-// Fetch event ratings
-$ratingsData = include('fetch_event_ratings.php');
-$eventTitles = $ratingsData['eventTitles'];
-$averageRatings = $ratingsData['averageRatings'];
-
-// Fetching attendees data
-$attendeesData = include('fetch_event_attendees.php');
-$attendeesEventTitles = $attendeesData['eventTitles'];
-$attendeesCount = $attendeesData['attendeesCount'];
-
-// Fetching event evaluations data
-$eventTitleFilter = isset($_GET['eventTitle']) ? $_GET['eventTitle'] : '';
-$evaluationsData = include('fetch_event_evaluations.php');
-$avgOrganization = $evaluationsData['avgOrganization'];
-$avgMaterials = $evaluationsData['avgMaterials'];
-$avgSpeaker = $evaluationsData['avgSpeaker'];
-$avgOverall = $evaluationsData['avgOverall'];
+// --- Removed fetch_event_ratings.php and related variables ---
 
 // Filter by month and year if set in the URL
 $monthFilter = isset($_GET['month']) ? $_GET['month'] : '';
@@ -159,9 +123,9 @@ $yearFilter = isset($_GET['year']) ? $_GET['year'] : '';
   <a href="admindash1.php">Requests/Time</a>
   <a href="admindash2.php">Feedback Word Cloud</a>
   <a href="admindash3.php">Ratings/Department</a>
-  <a href="admindash4.php">Attendees/Group</a>
+  <a href="admindash4.php">Attendees/community</a>
 </section>
-<!-- Filters for Graph 1 and 2 (Requests per Month and Request Status) -->
+<!-- Filters for Graph (Requests per Month) -->
 <section class="filter-container">
   <form method="GET" style="display: flex; gap: 20px; align-items: center;">
     <label for="month" style="font-weight: bold;">Month:</label>
@@ -186,33 +150,7 @@ $yearFilter = isset($_GET['year']) ? $_GET['year'] : '';
 
 <section class="charts">
   <div class="chart-container"><h3>Requests (With Forecasted Month)</h3><canvas id="requestsChart"></canvas></div>
-  <div class="chart-container"><h3>Request Status</h3><canvas id="requestsStatusChart"></canvas></div>
-</section>
-
-<section class="charts">
-  <div class="chart-container"><h3>Attendees per Event</h3><canvas id="attendeesChart"></canvas></div>
-  <div class="chart-container"><h3>Highest Rated Events</h3><canvas id="ratingsChart"></canvas></div>
-</section>
-
-<section class="charts">
-  <div class="chart-container">
-    <h3>Event Evaluation (Average Ratings)</h3>
-    <form method="GET" style="margin-bottom: 10px;">
-      <select name="eventTitle" onchange="this.form.submit()" style="padding: 5px;">
-        <option value="">All Events</option>
-        <?php foreach ($eventTitles as $title): ?>
-          <option value="<?= htmlspecialchars($title); ?>" <?= $eventTitleFilter === $title ? 'selected' : ''; ?>><?= htmlspecialchars($title); ?></option>
-        <?php endforeach; ?>
-      </select>
-    </form>
-    <canvas id="evaluationChart"></canvas>
-  </div>
-  <div class="chart-container"><h3>Total Attendees per Group</h3><canvas id="attendeesPerGroupChart"></canvas></div>
-</section>
-
-<section class="charts">
-  <div class="chart-container"><h3>Ratings per Group</h3><canvas id="ratingsPerEventChart"></canvas></div>
-  <div class="chart-container"><h3>Group Type Distribution</h3><canvas id="groupTypeDistributionChart"></canvas></div>
+  <!-- Removed Highest Rated Events chart here -->
 </section>
 
 <script>
@@ -247,168 +185,7 @@ new Chart(requestsCtx, {
   }
 });
 
-// Request status doughnut chart (with yellow for pending, red for rejected, green for approved)
-const requestsStatusCtx = document.getElementById('requestsStatusChart').getContext('2d');
-new Chart(requestsStatusCtx, {
-  type: 'doughnut',
-  data: {
-    labels: <?= json_encode($statusLabels) ?>,
-    datasets: [{
-      label: 'Request Status',
-      data: <?= json_encode($statusCounts) ?>,
-      backgroundColor: ['green', 'yellow', 'red'] // Colors for each status (Approved - Green, Pending - Yellow, Rejected - Red)
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false
-  }
-});
-
-// Attendees per event chart
-const attendeesCtx = document.getElementById('attendeesChart').getContext('2d');
-new Chart(attendeesCtx, {
-  type: 'bar',
-  data: {
-    labels: <?= json_encode($attendeesEventTitles) ?>,
-    datasets: [{
-      label: 'Attendees',
-      data: <?= json_encode($attendeesCount) ?>,
-      backgroundColor: 'rgba(54, 162, 235, 0.7)'
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: { beginAtZero: true },
-      y: { beginAtZero: true }
-    }
-  }
-});
-
-// Event ratings chart
-const ratingsCtx = document.getElementById('ratingsChart').getContext('2d');
-new Chart(ratingsCtx, {
-  type: 'bar',
-  data: {
-    labels: <?= json_encode($eventTitles) ?>,
-    datasets: [{
-      label: 'Average Rating',
-      data: <?= json_encode($averageRatings) ?>,
-      backgroundColor: 'rgba(255, 206, 86, 0.7)'
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: { beginAtZero: true },
-      y: { beginAtZero: true, max: 5 }
-    }
-  }
-});
-
-// Event evaluation radar chart
-const evaluationCtx = document.getElementById('evaluationChart').getContext('2d');
-new Chart(evaluationCtx, {
-  type: 'radar',
-  data: {
-    labels: ['Organization', 'Materials', 'Speaker', 'Overall'],
-    datasets: [{
-      label: 'Average Evaluation Scores',
-      data: [
-        <?= json_encode($avgOrganization) ?>,
-        <?= json_encode($avgMaterials) ?>,
-        <?= json_encode($avgSpeaker) ?>,
-        <?= json_encode($avgOverall) ?>
-      ],
-      backgroundColor: 'rgba(255, 99, 132, 0.2)',
-      borderColor: 'rgb(255, 99, 132)',
-      pointBackgroundColor: 'rgb(255, 99, 132)'
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      r: {
-        suggestedMin: 0,
-        suggestedMax: 5
-      }
-    }
-  }
-});
-
-// Attendees per Group (Bar Chart)
-const attendeesPerGroupCtx = document.getElementById('attendeesPerGroupChart').getContext('2d');
-new Chart(attendeesPerGroupCtx, {
-  type: 'bar',
-  data: {
-    labels: <?= json_encode($groupTypes) ?>,  // Dynamically fetched group types
-    datasets: [{
-      label: 'Total Attendees',
-      data: <?= json_encode($attendeesCounts) ?>,  // Dynamically fetched attendee counts per group
-      backgroundColor: 'rgba(54, 162, 235, 0.7)'  // You can adjust the color as needed
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: { beginAtZero: true },
-      y: { beginAtZero: true }  // Make sure the y-axis starts at 0
-    }
-  }
-});
-
-
-// Ratings per Group (Bar Chart)
-const ratingsPerGroupCtx = document.getElementById('ratingsPerEventChart').getContext('2d');
-new Chart(ratingsPerGroupCtx, {
-  type: 'bar',
-  data: {
-    labels: <?= json_encode($groupTypes) ?>,  // Dynamically fetched group types
-    datasets: [{
-      label: 'Average Rating per Group',  // Change label to reflect "Ratings per Group"
-      data: <?= json_encode($groupAverageRatings) ?>,  // Dynamically fetched average ratings per group
-      backgroundColor: 'rgba(75, 192, 192, 0.7)'  // You can adjust the color as needed
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: { beginAtZero: true },
-      y: { beginAtZero: true, max: 5 }  // Ratings are on a scale of 1 to 5
-    }
-  }
-});
-
-
-// Group Type Distribution (Doughnut Chart)
-// Check if data exists before creating the chart
-if (<?= json_encode($groupTypes) ?>.length > 0 && <?= json_encode($groupCounts) ?>.length > 0) {
-    const groupTypeDistributionCtx = document.getElementById('groupTypeDistributionChart').getContext('2d');
-    new Chart(groupTypeDistributionCtx, {
-      type: 'doughnut',
-      data: {
-        labels: <?= json_encode($groupTypes) ?>,  // Dynamically fetched group types
-        datasets: [{
-          label: 'Group Type Distribution',
-          data: <?= json_encode($groupCounts) ?>,  // Dynamically fetched group counts
-          backgroundColor: ['red', 'blue', 'green', 'yellow'] // You can adjust colors if needed
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
-      }
-    });
-} else {
-    console.log("No data available for the chart.");
-}
-
+// Removed Event ratings chart JavaScript
 </script>
 
 </body>

@@ -12,7 +12,7 @@ $query = "
     ) / 12) AS average_rating
   FROM event_evaluations ev
   JOIN events e ON e.id = ev.event_id
-  GROUP BY e.id
+  group by e.id
   ORDER BY average_rating DESC
   LIMIT 5
 ";

@@ -60,7 +60,7 @@ FROM event_evaluations e
 JOIN users u ON e.user_id = u.id
 JOIN events ev ON e.event_id = ev.id
 $whereSql
-GROUP BY u.department
+group by u.department
 ";
 
 $result = $conn->query($query);
@@ -78,6 +78,43 @@ while ($row = $result->fetch_assoc()) {
     $materialData[] = round($row['avg_material'], 2);
     $organizationData[] = round($row['avg_organization'], 2);
     $overallData[] = round($row['avg_overall'], 2);
+}
+
+// Fetch highest rated events for chart with applied filters
+$eventWhereClauses = [];
+if ($monthFilter !== '') {
+    $monthNumber = date('m', strtotime($monthFilter . " 1"));
+    $eventWhereClauses[] = "MONTH(ev.event_date) = " . intval($monthNumber);
+}
+if ($yearFilter !== '') {
+    $eventWhereClauses[] = "YEAR(ev.event_date) = " . intval($yearFilter);
+}
+if ($departmentFilter !== '') {
+    $departmentEscaped = $conn->real_escape_string($departmentFilter);
+    $eventWhereClauses[] = "u.department = '" . $departmentEscaped . "'";
+}
+if ($eventTitleFilter !== '') {
+    $eventTitleEscaped = $conn->real_escape_string($eventTitleFilter);
+    $eventWhereClauses[] = "ev.title = '" . $eventTitleEscaped . "'";
+}
+$eventWhereSql = count($eventWhereClauses) > 0 ? "WHERE " . implode(" AND ", $eventWhereClauses) : "";
+
+$eventRatingsQuery = "
+    SELECT ev.title, ROUND(AVG((e.overall_1 + e.overall_2)/2), 2) AS avg_rating
+    FROM event_evaluations e
+    JOIN users u ON e.user_id = u.id
+    JOIN events ev ON e.event_id = ev.id
+    $eventWhereSql
+    GROUP BY ev.title
+    HAVING avg_rating IS NOT NULL
+    ORDER BY avg_rating DESC
+";
+$eventTitles = [];
+$averageRatings = [];
+$eventRatingsResult = $conn->query($eventRatingsQuery);
+while ($row = $eventRatingsResult->fetch_assoc()) {
+    $eventTitles[] = $row['title'];
+    $averageRatings[] = $row['avg_rating'];
 }
 ?>
 
@@ -146,9 +183,10 @@ while ($row = $result->fetch_assoc()) {
     .filter-container button:hover {
       background-color: #45a049;
     }
-
     .chart-section { padding: 20px; display: flex; flex-direction: column; gap: 40px; }
     .chart-container { width: 100%; max-width: 1000px; margin: 0 auto; background: #fff; padding: 50px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); height: 600px; }
+    /* Additional for ratings chart */
+    .ratings-chart-container { width: 100%; max-width: 1000px; margin: 0 auto; background: #fff; padding: 50px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); height: 600px; }
   </style>
 </head>
 <body>
@@ -164,7 +202,7 @@ while ($row = $result->fetch_assoc()) {
   <a href="admindash1.php">Requests/Time</a>
   <a href="admindash2.php">Feedback Word Cloud</a>
   <a href="admindash3.php"  class="active">Ratings/Department</a>
-  <a href="admindash4.php">Attendees/Group</a>
+  <a href="admindash4.php">Attendees/community</a>
 </section>
 <!-- Filter form -->
 <section class="filter-container">
@@ -214,6 +252,10 @@ while ($row = $result->fetch_assoc()) {
   <div class="chart-container">
     <h3>Evaluation Ratings per Department</h3>
     <canvas id="comboEvaluationChart"></canvas>
+  </div>
+  <div class="ratings-chart-container">
+    <h3>Highest Rated Events</h3>
+    <canvas id="ratingsChart"></canvas>
   </div>
 </section>
 
@@ -269,6 +311,28 @@ new Chart(ctxCombo, {
       legend: {
         position: 'top'
       }
+    }
+  }
+});
+
+// Highest Rated Events Chart
+const ratingsCtx = document.getElementById('ratingsChart').getContext('2d');
+new Chart(ratingsCtx, {
+  type: 'bar',
+  data: {
+    labels: <?= json_encode($eventTitles) ?>,
+    datasets: [{
+      label: 'Average Rating',
+      data: <?= json_encode($averageRatings) ?>,
+      backgroundColor: 'rgba(255, 206, 86, 0.7)'
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: { beginAtZero: true },
+      y: { beginAtZero: true, max: 5 }
     }
   }
 });

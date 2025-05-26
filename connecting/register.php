@@ -16,7 +16,7 @@ if (isset($_POST["register"])) {
     $course = trim($_SESSION["course"]);
     $yearr = trim($_SESSION["year"]);
     $section = trim($_SESSION["section"]);
-    $groupp = trim($_SESSION["groupp"]);
+    $community = trim($_SESSION["community"]);
     $username = trim($_POST["username"]);
     $password = password_hash(trim($_POST["password"]), PASSWORD_BCRYPT);
     $gender = $_SESSION["gender"];
@@ -97,7 +97,7 @@ if (isset($_POST["register"])) {
     }
 
     // Insert User Data
-    $stmt = $conn->prepare("INSERT INTO users (lastname, firstname, age, email, contact, address, department, course, yearr, section, groupp, username, password, gender, impairment, profilepic) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO users (lastname, firstname, age, email, contact, address, department, course, yearr, section, community, username, password, gender, impairment, profilepic) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     if (!$stmt) {
         echo "<script>
@@ -107,7 +107,7 @@ if (isset($_POST["register"])) {
         exit();
     }
 
-    $stmt->bind_param("ssisssssssssssss", $lastname, $firstname, $age, $email, $contact, $address, $department, $course, $yearr, $section, $groupp, $username, $password, $gender, $impair, $profilePicPath);
+    $stmt->bind_param("ssisssssssssssss", $lastname, $firstname, $age, $email, $contact, $address, $department, $course, $yearr, $section, $community, $username, $password, $gender, $impair, $profilePicPath);
 
     if ($stmt->execute()) {
         // Insert notification to admin_notification table

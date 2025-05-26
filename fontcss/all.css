@@ -2367,7 +2367,7 @@ readers do not read off random characters that represent icons */
 .fa-laugh-wink:before {
   content: "\f59c"; }
 
-.fa-layer-group:before {
+.fa-layer-community:before {
   content: "\f5fd"; }
 
 .fa-leaf:before {
@@ -2727,10 +2727,10 @@ readers do not read off random characters that represent icons */
 .fa-nutritionix:before {
   content: "\f3d6"; }
 
-.fa-object-group:before {
+.fa-object-community:before {
   content: "\f247"; }
 
-.fa-object-ungroup:before {
+.fa-object-uncommunity:before {
   content: "\f248"; }
 
 .fa-odnoklassniki:before {

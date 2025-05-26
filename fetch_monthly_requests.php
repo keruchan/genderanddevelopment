@@ -12,7 +12,7 @@ if ($selectedMonth && $selectedYear) {
         SELECT DATE_FORMAT(created_at, '%b') AS month, COUNT(*) AS count
         FROM requests
         WHERE MONTHNAME(created_at) = ? AND YEAR(created_at) = ?
-        GROUP BY YEAR(created_at), MONTH(created_at)
+        group by YEAR(created_at), MONTH(created_at)
         ORDER BY YEAR(created_at), MONTH(created_at)
     ");
     $monthlyQuery->bind_param('si', $selectedMonth, $selectedYear);
@@ -24,7 +24,7 @@ if ($selectedMonth && $selectedYear) {
         SELECT DATE_FORMAT(created_at, '%b') AS month, COUNT(*) AS count
         FROM requests
         WHERE MONTHNAME(created_at) = ?
-        GROUP BY YEAR(created_at), MONTH(created_at)
+        group by YEAR(created_at), MONTH(created_at)
         ORDER BY YEAR(created_at), MONTH(created_at)
     ");
     $monthlyQuery->bind_param('s', $selectedMonth);
@@ -36,7 +36,7 @@ if ($selectedMonth && $selectedYear) {
         SELECT DATE_FORMAT(created_at, '%b') AS month, COUNT(*) AS count
         FROM requests
         WHERE YEAR(created_at) = ?
-        GROUP BY YEAR(created_at), MONTH(created_at)
+        group by YEAR(created_at), MONTH(created_at)
         ORDER BY YEAR(created_at), MONTH(created_at)
     ");
     $monthlyQuery->bind_param('i', $selectedYear);
@@ -47,7 +47,7 @@ if ($selectedMonth && $selectedYear) {
     $monthlyQuery = $conn->query("
         SELECT DATE_FORMAT(created_at, '%b') AS month, COUNT(*) AS count
         FROM requests
-        GROUP BY YEAR(created_at), MONTH(created_at)
+        group by YEAR(created_at), MONTH(created_at)
         ORDER BY YEAR(created_at), MONTH(created_at)
     ");
 }

@@ -136,7 +136,7 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
         <h2>Request Details</h2>
         <p><strong>Request No:</strong> <span id="modalRequestNo"></span></p>
         <p><strong>Full Name:</strong> <span id="modalFullName"></span></p>
-        <p><strong>Group:</strong> <span id="modalGroup"></span></p>
+        <p><strong>community:</strong> <span id="modalcommunity"></span></p>
         <p><strong>Date:</strong> <span id="modalDate"></span></p>
         <p><strong>Status:</strong> <span id="modalStatus"></span></p>
         <p><strong>Description:</strong> <span id="modalDescription"></span></p>
@@ -184,7 +184,7 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
         currentRequestId = request.id;
         document.getElementById("modalRequestNo").innerText = request.id;
         document.getElementById("modalFullName").innerText = request.lastname + ", " + request.firstname;
-        document.getElementById("modalGroup").innerText = request.concern_type;
+        document.getElementById("modalcommunity").innerText = request.concern_type;
         document.getElementById("modalDate").innerText = formatTime(request.created_at); // Format date to 12-hour format with AM/PM
         document.getElementById("modalStatus").innerText = request.status;
         document.getElementById("modalDescription").innerText = request.description;
