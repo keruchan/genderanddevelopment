@@ -123,6 +123,27 @@ $yearFilter = isset($_GET['year']) ? $_GET['year'] : '';
     .filter-container button:hover {
       background-color: #45a049;
     }
+    .dashboard-nav {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin: 1rem auto;
+      padding: 1rem;
+      background: #d0eaff;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .dashboard-nav a {
+      color: #333;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+    }
+    .dashboard-nav a.active, .dashboard-nav a:hover {
+      background: #4CAF50;
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -133,7 +154,13 @@ $yearFilter = isset($_GET['year']) ? $_GET['year'] : '';
   <div class="card"><h2><?= $totalEvents; ?></h2><p>Total Events</p></div>
   <div class="card"><h2><?= $totalPosts; ?></h2><p>Total Posts</p></div>
 </section>
-
+<section class="dashboard-nav">
+  <a href="admin.php"   class="active">Summary</a>
+  <a href="admindash1.php">Requests/Time</a>
+  <a href="admindash2.php">Feedback Word Cloud</a>
+  <a href="admindash3.php">Ratings/Department</a>
+  <a href="admindash4.php">Attendees/Group</a>
+</section>
 <!-- Filters for Graph 1 and 2 (Requests per Month and Request Status) -->
 <section class="filter-container">
   <form method="GET" style="display: flex; gap: 20px; align-items: center;">
