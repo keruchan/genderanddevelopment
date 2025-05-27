@@ -8,13 +8,15 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
-$type = isset($_GET['type']) ? $_GET['type'] : 'events'; // Default to events
+$type = isset($_GET['type']) ? $_GET['type'] : 'events';
 
 $archivedData = [];
 if ($type == 'events') {
     $stmt = $conn->prepare("SELECT * FROM user_archive_events WHERE user_id = ? ORDER BY created_at DESC");
 } elseif ($type == 'requests') {
     $stmt = $conn->prepare("SELECT * FROM user_archive_requests WHERE user_id = ? ORDER BY created_at DESC");
+} elseif ($type == 'concerns') {
+    $stmt = $conn->prepare("SELECT * FROM admin_archived_concerns WHERE user_id = ? ORDER BY created_at DESC");
 } else {
     die("Invalid type specified.");
 }
@@ -109,9 +111,48 @@ if ($stmt) {
             color: #007bff;
             font-weight: bold;
             text-decoration: underline;
+            cursor: pointer;
         }
         a.view-link:hover {
             color: #0056b3;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            border-radius: 8px;
+            max-width: 700px;
+        }
+        .modal-header {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .modal img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            margin-bottom: 15px;
+        }
+        .close {
+            color: red;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -123,6 +164,7 @@ if ($stmt) {
     <div class="filter-btns">
         <a href="user_archived.php?type=events" class="<?php echo ($type == 'events') ? 'active' : ''; ?>">Archived Events</a>
         <a href="user_archived.php?type=requests" class="<?php echo ($type == 'requests') ? 'active' : ''; ?>">Archived Requests</a>
+        <a href="user_archived.php?type=concerns" class="<?php echo ($type == 'concerns') ? 'active' : ''; ?>">Archived Concerns</a>
     </div>
 
     <table>
@@ -138,7 +180,7 @@ if ($stmt) {
                     <th>Avg Rating</th>
                     <th>Comments</th>
                     <th>Rating Date</th>
-                <?php elseif ($type == 'requests'): ?>
+                <?php elseif ($type == 'requests' || $type == 'concerns'): ?>
                     <th>#</th>
                     <th>Concern Type</th>
                     <th>Description</th>
@@ -146,6 +188,7 @@ if ($stmt) {
                     <th>Status</th>
                     <th>Created At</th>
                     <th>Status Updated</th>
+                    <th>Remarks</th>
                 <?php endif; ?>
             </tr>
         </thead>
@@ -171,31 +214,58 @@ if ($stmt) {
                             <td><?php echo round($avg_rating, 2); ?></td>
                             <td><?php echo htmlspecialchars($row['comments']); ?></td>
                             <td><?php echo htmlspecialchars($row['created_at']); ?></td>
-                        <?php elseif ($type == 'requests'): ?>
+                        <?php elseif ($type == 'requests' || $type == 'concerns'): ?>
                             <td><?php echo $counter++; ?></td>
                             <td><?php echo htmlspecialchars($row['concern_type']); ?></td>
                             <td><?php echo htmlspecialchars($row['description']); ?></td>
                             <td>
                                 <?php if (!empty($row['attachment'])): ?>
-                                    <a href="<?php echo htmlspecialchars($row['attachment']); ?>" class="view-link" target="_blank">View</a>
+                                    <a class="view-link" onclick='openModal(<?php echo json_encode($row); ?>)'>View</a>
                                 <?php else: ?>
                                     No Attachment
                                 <?php endif; ?>
                             </td>
                             <td><?php echo htmlspecialchars($row['status']); ?></td>
                             <td><?php echo htmlspecialchars($row['created_at']); ?></td>
-                            <td><?php echo ($row['status_updated'] != '0000-00-00 00:00:00') ? htmlspecialchars($row['status_updated']) : 'No'; ?></td>
+                            <td><?php echo ($row['status_updated'] !== null && $row['status_updated'] != '0000-00-00 00:00:00') ? htmlspecialchars($row['status_updated']) : 'No'; ?></td>
+                            <td><?php echo htmlspecialchars($row['remarks']); ?></td>
                         <?php endif; ?>
                     </tr>
                 <?php endforeach; ?>
             <?php else: ?>
                 <tr>
-                    <td colspan="<?php echo ($type == 'events') ? 9 : 7; ?>" class="no-data-msg">No archived data found.</td>
+                    <td colspan="<?php echo ($type == 'events') ? 9 : 8; ?>" class="no-data-msg">No archived data found.</td>
                 </tr>
             <?php endif; ?>
         </tbody>
     </table>
 </div>
+
+<!-- Modal for image and info -->
+<div id="imageModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="document.getElementById('imageModal').style.display='none'">&times;</span>
+        <div class="modal-header">Attachment Details</div>
+        <img id="modalImage" src="" alt="Attachment Preview">
+        <p><strong>Concern Type:</strong> <span id="modalConcern"></span></p>
+        <p><strong>Description:</strong> <span id="modalDescription"></span></p>
+        <p><strong>Status:</strong> <span id="modalStatus"></span></p>
+        <p><strong>Created At:</strong> <span id="modalCreated"></span></p>
+        <p><strong>Remarks:</strong> <span id="modalRemarks"></span></p>
+    </div>
+</div>
+
+<script>
+function openModal(row) {
+    document.getElementById('modalImage').src = row.attachment;
+    document.getElementById('modalConcern').textContent = row.concern_type;
+    document.getElementById('modalDescription').textContent = row.description;
+    document.getElementById('modalStatus').textContent = row.status;
+    document.getElementById('modalCreated').textContent = row.created_at;
+    document.getElementById('modalRemarks').textContent = row.remarks || 'None';
+    document.getElementById('imageModal').style.display = 'block';
+}
+</script>
 
 <?php include_once('temp/footer.php'); ?>
 

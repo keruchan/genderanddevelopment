@@ -3,12 +3,12 @@ include_once('temp/header.php');
 include_once('temp/navigationold.php');
 require 'connecting/connect.php';
 
-// Fetch user data, including profile picture
-$userQuery = $conn->query("SELECT * FROM users");
+// Fetch archived user data from the `users` table where archived = 1
+$userQuery = $conn->query("SELECT * FROM users WHERE archived = 0");
 $users = $userQuery->fetch_all(MYSQLI_ASSOC);
 
-// Fetch unique communitys for filtering
-$communityQuery = $conn->query("SELECT DISTINCT community FROM users");
+// Fetch unique communities for filtering
+$communityQuery = $conn->query("SELECT DISTINCT community FROM users WHERE archived = 0");
 $communitys = $communityQuery->fetch_all(MYSQLI_ASSOC);
 ?>
 

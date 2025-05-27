@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (!empty($_FILES['image']['name'])) {
         $fileTmpPath = $_FILES['image']['tmp_name'];
         $fileName = basename($_FILES['image']['name']);
-        $uploadDir = "requestupload/";
+        $uploadDir = "concernupload/";
         $destPath = $uploadDir . $fileName;
 
         if (move_uploaded_file($fileTmpPath, $destPath)) {
@@ -38,23 +38,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     if (!empty($concernType) && !empty($description)) {
-        $stmt = $conn->prepare("INSERT INTO requests (user_id, concern_type, description, attachment, created_at) VALUES (?, ?, ?, ?, NOW())");
+        $stmt = $conn->prepare("INSERT INTO concerns (user_id, concern_type, description, attachment, created_at) VALUES (?, ?, ?, ?, NOW())");
         $stmt->bind_param("isss", $userId, $concernType, $description, $fileName);
 
         if ($stmt->execute()) {
-            $successMessage = "Your request has been submitted successfully.";
+            $successMessage = "Your concern has been submitted successfully.";
 
-            $notifTitle = "New GAD Request";
-            $notifMessage = "A new gender-related request has been submitted.";
-            $notifType = "requests";
-            $notifLink = "adminrequests.php";
+            $notifTitle = "New GAD Concern";
+            $notifMessage = "A new gender-related concern has been submitted.";
+            $notifType = "concerns";
+            $notifLink = "adminconcerns.php";
 
             $notifStmt = $conn->prepare("INSERT INTO admin_notification (title, message, type, link, is_read, created_at) VALUES (?, ?, ?, ?, 0, NOW())");
             $notifStmt->bind_param("ssss", $notifTitle, $notifMessage, $notifType, $notifLink);
             $notifStmt->execute();
             $notifStmt->close();
         } else {
-            $errorMessage = "There was an error submitting your request. Please try again.";
+            $errorMessage = "There was an error submitting your concern. Please try again.";
         }
 
         $stmt->close();
@@ -75,60 +75,54 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         padding: 2rem 2.5rem;
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border-top: 6px solid #2b6cb0;
     }
-
     .form-title {
         text-align: center;
         font-size: 2.2rem;
-        color: #2f855a;
+        color: #2b6cb0;
         margin-bottom: 1.5rem;
     }
-
     label {
         display: block;
         margin-bottom: 0.4rem;
         font-weight: 600;
         font-size: 1.1rem;
+        color: #2a4365;
     }
-
     .text-input,
     textarea {
         width: 100%;
         padding: 0.75rem;
         margin-bottom: 1.2rem;
         border-radius: 6px;
-        border: 1px solid #ccc;
+        border: 1px solid #cbd5e0;
         font-size: 1.05rem;
     }
-
     textarea {
         min-height: 120px;
         resize: vertical;
     }
-
     .btn-big {
         width: 100%;
         padding: 0.9rem;
         font-size: 1.15rem;
         border: none;
         border-radius: 6px;
-        background-color: #38a169;
+        background-color: #2b6cb0;
         color: white;
         font-weight: bold;
         cursor: pointer;
         transition: background-color 0.3s ease;
     }
-
     .btn-big:hover {
-        background-color: #2f855a;
+        background-color: #2c5282;
     }
-
     .success {
         color: green;
         text-align: center;
         margin-bottom: 1rem;
     }
-
     .error {
         color: red;
         text-align: center;
@@ -137,8 +131,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 </style>
 
 <div class="auth-content">
-    <form action="request.php" method="post" enctype="multipart/form-data">
-        <h2 class="form-title">GAD Request Form</h2>
+    <form action="concern.php" method="post" enctype="multipart/form-data">
+        <h2 class="form-title">GAD Concern Form</h2>
 
         <?php if (!empty($successMessage)): ?>
             <div class="success"><?= htmlspecialchars($successMessage) ?></div>
@@ -149,22 +143,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <?php endif; ?>
 
         <div>
-            <label for="options">Type of Request</label>
+            <label for="options">Type of Concern</label>
             <select id="options" name="options" class="text-input" required onchange="toggleCustomInput()">
-                <option value="" disabled selected>Select a request type</option>
-                <option value="Equal treatment and opportunities">Equal treatment and opportunities</option>
-                <option value="Gender sensitivity education">Gender sensitivity education</option>
-                <option value="Safe and inclusive spaces">Safe and inclusive spaces</option>
-                <option value="Access to gender-responsive support services">Access to gender-responsive support services</option>
-                <option value="Clear anti-harassment and anti-discrimination policies">Clear anti-harassment and anti-discrimination policies</option>
-                <option value="Support for student-parents">Support for student-parents</option>
+                <option value="" disabled selected>Select a concern type</option>
+                <option value="Gender-based discrimination">Gender-based discrimination</option>
+                <option value="Lack of gender sensitivity">Lack of gender sensitivity</option>
+                <option value="Sexual harassment and abuse">Sexual harassment and abuse</option>
+                <option value="Lack of safe spaces">Lack of safe spaces</option>
+                <option value="Limited representation">Limited representation</option>
+                <option value="Teenage pregnancy stigma">Teenage pregnancy stigma</option>
                 <option value="Others">Others</option>
             </select>
         </div>
 
         <div id="customInputDiv" style="display: none;">
-            <label for="customOption">Please specify your request</label>
-            <input type="text" id="customOption" name="customOption" class="text-input" placeholder="Enter your custom request">
+            <label for="customOption">Please specify your concern</label>
+            <input type="text" id="customOption" name="customOption" class="text-input" placeholder="Enter your custom concern">
         </div>
 
         <div>
@@ -174,11 +168,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         <div>
             <label for="message">Description</label>
-            <textarea name="message" id="message" class="text-input contact-input" placeholder="Describe your request clearly..." required></textarea>
+            <textarea name="message" id="message" class="text-input contact-input" placeholder="Describe your concern in detail..." required></textarea>
         </div>
 
         <div>
-            <button type="submit" class="btn-big">Submit Request</button>
+            <button type="submit" class="btn-big">Submit Concern</button>
         </div>
     </form>
 </div>

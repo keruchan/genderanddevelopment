@@ -60,7 +60,7 @@ if (isset($_SESSION['user_id'])) {
     <ul class="nav">
         <li><a href="index.php">Home</a></li>
         <li><a href="event_list.php" onclick="handleEventClick(event)">Events</a></li>
-        <li><a href="view_requests.php" onclick="handleRequestClick(event)">Request</a></li>
+        <li><a href="gad_information.php" onclick="handleRequestClick(event)">Services</a></li>
         <li class="dropdown">
             <a href="#" class="dropbtn">
                 <i class="fa fa-bell"></i>
@@ -101,6 +101,8 @@ if (isset($_SESSION['user_id'])) {
                 <ul class="dropdown-content">
                     <li><a href="user_profile.php">Profile</a></li>
                     <li><a href="user_update_password.php">Update Password</a></li>
+                    <li><a href="view_requests.php">View Requests</a></li>
+                    <li><a href="view_concerns.php">View Concerns</a></li>
                     <li><a href="user_archived.php">Archived</a></li>
                     <li><a href="connecting/logout.php">Logout</a></li>
                 </ul>

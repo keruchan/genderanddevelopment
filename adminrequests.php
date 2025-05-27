@@ -62,9 +62,9 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
 <div class="request-management-container">
     <h1 style="font-size: 22px;">Request Management</h1>
     <div class="filter-container">
-        <input type="text" id="searchBox" placeholder="Search requests..." value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" oninput="updateFilters()">
+        <input type="text" id="searchBox" placeholder="Search requests..." value="" autocomplete="off">
         <div class="select-filters">
-            <select id="typeFilter" onchange="updateFilters()">
+            <select id="typeFilter">
                 <option value="">All Types</option>
                 <?php foreach ($types as $type) : ?>
                     <option value="<?= htmlspecialchars($type['concern_type']) ?>" 
@@ -73,7 +73,7 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
                     </option>
                 <?php endforeach; ?>
             </select>
-            <select id="statusFilter" onchange="updateFilters()">
+            <select id="statusFilter">
                 <option value="">All Statuses</option>
                 <option value="approved" <?= isset($_GET['status']) && $_GET['status'] === 'approved' ? 'selected' : '' ?>>Approved</option>
                 <option value="rejected" <?= isset($_GET['status']) && $_GET['status'] === 'rejected' ? 'selected' : '' ?>>Rejected</option>
@@ -94,7 +94,9 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
         </thead>
         <tbody>
             <?php foreach ($requests as $request) : ?>
-                <tr>
+                <tr class="request-row"
+                    data-type="<?= htmlspecialchars($request['concern_type']) ?>"
+                    data-status="<?= htmlspecialchars($request['status']) ?>">
                     <td><?= $request['id'] ?></td>
                     <td><?= htmlspecialchars($request['lastname'] . ', ' . $request['firstname']) ?></td>
                     <td class="concern_type"><?= htmlspecialchars($request['concern_type']) ?></td>
@@ -164,18 +166,31 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
 </div>
 
 <script>
-    // Update filters and reload the table
-    function updateFilters() {
-        const search = encodeURIComponent(document.getElementById('searchBox').value.trim());
-        const type = encodeURIComponent(document.getElementById('typeFilter').value.trim());
-        const status = encodeURIComponent(document.getElementById('statusFilter').value.trim());
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        if (search) urlParams.set('search', search); else urlParams.delete('search');
-        if (type) urlParams.set('type', type); else urlParams.delete('type');
-        if (status) urlParams.set('status', status); else urlParams.delete('status');
-        
-        window.location.search = urlParams.toString();
+    // Client-side search and filter
+    document.getElementById('searchBox').addEventListener('input', filterRequests);
+    document.getElementById('typeFilter').addEventListener('change', filterRequests);
+    document.getElementById('statusFilter').addEventListener('change', filterRequests);
+
+    function filterRequests() {
+        let search = document.getElementById('searchBox').value.toLowerCase();
+        let type = document.getElementById('typeFilter').value.toLowerCase();
+        let status = document.getElementById('statusFilter').value.toLowerCase();
+        let rows = document.querySelectorAll('#requestsTable tbody tr');
+
+        rows.forEach(row => {
+            let text = row.innerText.toLowerCase();
+            let rowType = row.getAttribute('data-type') ? row.getAttribute('data-type').toLowerCase() : '';
+            let rowStatus = row.getAttribute('data-status') ? row.getAttribute('data-status').toLowerCase() : '';
+            let searchMatch = text.includes(search);
+            let typeMatch = !type || rowType === type;
+            let statusMatch = !status || rowStatus === status;
+
+            if (searchMatch && typeMatch && statusMatch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
     }
 
     let currentRequestId = null;

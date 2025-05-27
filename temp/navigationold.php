@@ -61,6 +61,7 @@ if (isset($_SESSION['admin_id'])) {
             <li><a href="admin.php">Dashboard</a></li>
             <li><a href="admin_eventlists.php">Events</a></li>
             <li><a href="adminrequests.php">Requests</a></li>
+            <li><a href="adminconcerns.php">Concerns</a></li>
             <li><a href="usersadmin.php">Users</a></li>
             <li><a href="adminpost.php">Posts</a></li>
 
@@ -84,6 +85,7 @@ if (isset($_SESSION['admin_id'])) {
                                     elseif ($notif['type'] === 'update-pass') $link = 'adminupdatepass.php';
                                     elseif ($notif['type'] === 'new-user') $link = 'usersadmin.php';
                                     elseif ($notif['type'] === 'userupdate') $link = 'usersadmin.php';
+                                    elseif ($notif['type'] === 'concerns') $link = 'adminconcerns.php';
                                 ?>
                                 <li>
                                     <a href="<?= $link ?>" data-id="<?= $notif['id'] ?>" class="notif-link <?= $notif['is_read'] == 0 ? 'unread' : '' ?>">
@@ -105,7 +107,8 @@ if (isset($_SESSION['admin_id'])) {
                 <li class="dropdown">
                     <a href="javascript:void(0);" class="dropbtn"><?= $displayName ?> <i class="fa fa-chevron-down"></i></a>
                     <ul class="dropdown-content">
-                        <li><a href="adminupdatepass.php">Update</a></li>
+                        <li><a href="adminupdatepass.php">Update Password</a></li>
+                        <li><a href="admin_view_violations.php">View User Violations</a></li>
                         <li><a href="admin_archived_users.php">Archived Users</a></li>
                         <li><a href="admin_archived_events.php">Archived Events</a></li>
                         <li><a href="admin_archive_requests.php">Archived Requests</a></li>

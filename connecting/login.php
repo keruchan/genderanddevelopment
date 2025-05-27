@@ -26,7 +26,7 @@ if (isset($_POST["login-btn"])) {
             $today = date('Y-m-d');
             $tomorrow = date('Y-m-d', strtotime('+1 day'));
 
-            // Insert password update reminder if today is 5-5
+            // Password reminder
             if (date('m-d') === '05-05') {
                 $checkUpdatePass = $conn->prepare("SELECT id FROM admin_notification WHERE type = 'update-pass' AND DATE(created_at) = ?");
                 $checkUpdatePass->bind_param("s", $today);
@@ -47,7 +47,7 @@ if (isset($_POST["login-btn"])) {
                 $checkUpdatePass->close();
             }
 
-            // Insert event reminder notifications if events are scheduled for tomorrow
+            // Event reminders
             $eventStmt = $conn->prepare("SELECT id, title FROM events WHERE event_date = ?");
             $eventStmt->bind_param("s", $tomorrow);
             $eventStmt->execute();
@@ -85,14 +85,22 @@ if (isset($_POST["login-btn"])) {
     }
 
     // User Login Check
-    $stmt = $conn->prepare("SELECT id, username, password FROM users WHERE username = ?");
+    $stmt = $conn->prepare("SELECT id, username, password, archived FROM users WHERE username = ?");
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $stmt->store_result();
 
     if ($stmt->num_rows > 0) {
-        $stmt->bind_result($user_id, $user_username, $user_password);
+        $stmt->bind_result($user_id, $user_username, $user_password, $archived);
         $stmt->fetch();
+
+        if ($archived == 1) {
+            echo "<script>
+                    alert('Your account is currently blocked. Please proceed to the GAD office for assistance.');
+                    window.location.href = '../userin.php';
+                  </script>";
+            exit();
+        }
 
         if (password_verify($password, $user_password)) {
             $_SESSION['user_id'] = $user_id;
@@ -101,7 +109,6 @@ if (isset($_POST["login-btn"])) {
             date_default_timezone_set('Asia/Manila');
             $today = date('Y-m-d');
 
-            // Insert user profile/password update reminder if today is 5-2
             if (date('m-d') === '05-05') {
                 $checkUserReminder = $conn->prepare("SELECT id FROM notifications WHERE type = 'security' AND user_id = ? AND DATE(created_at) = ?");
                 $checkUserReminder->bind_param("is", $user_id, $today);
@@ -111,10 +118,9 @@ if (isset($_POST["login-btn"])) {
                 if ($checkUserReminder->num_rows === 0) {
                     $notifTitle = "Reminder: Update Your Profile and Password";
                     $notifMessage = "Please update your profile and password today to enhance security.";
-                    $notifType = "security"; // Changed to 'security' as per your request
+                    $notifType = "security";
                     $notifLink = "user_updateprofile.php";
 
-                    // Insert the notification for the user
                     $insertUserNotif = $conn->prepare("INSERT INTO notifications (user_id, title, message, type, link, is_read, created_at) VALUES (?, ?, ?, ?, ?, 0, NOW())");
                     $insertUserNotif->bind_param("issss", $user_id, $notifTitle, $notifMessage, $notifType, $notifLink);
                     $insertUserNotif->execute();

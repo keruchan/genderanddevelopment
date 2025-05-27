@@ -64,13 +64,16 @@ session_start();
             gap: 10px;
             justify-content: center;
         }
-        .action-btns form {
-            display: inline-block;
-        }
         .readonly-btn {
             background-color: gold;
             color: black;
             cursor: default;
+            pointer-events: none;
+        }
+        .violation-btn {
+            background-color: gray;
+            color: white;
+            cursor: not-allowed;
             pointer-events: none;
         }
         .unattend-btn {
@@ -119,55 +122,66 @@ session_start();
                     $result = $stmt->get_result();
                     $counter = 1;
 
-                    if ($result->num_rows > 0) {
-                        while ($row = $result->fetch_assoc()) {
-                            $formattedStartTime = date("h:i A", strtotime($row['start_time']));
-                            $formattedEndTime = date("h:i A", strtotime($row['end_time']));
-                            $eventDateTime = $row['event_date'] . ' ' . $row['start_time'];
-                            $currentDateTime = date('Y-m-d H:i:s');
+                    while ($row = $result->fetch_assoc()) {
+                        $formattedStartTime = date("h:i A", strtotime($row['start_time']));
+                        $formattedEndTime = date("h:i A", strtotime($row['end_time']));
+                        $eventDateTime = new DateTime($row['event_date'] . ' ' . $row['start_time']);
+                        $now = new DateTime();
+                        $daysSinceEvent = $eventDateTime->diff($now)->days;
+                        $eventPassed = $now > $eventDateTime;
 
-                            echo "<tr>",
-                                "<td>" . $counter++ . "</td>",
-                                "<td>" . htmlspecialchars($row['title']) . "</td>",
-                                "<td>" . htmlspecialchars($row['event_date']) . "</td>",
-                                "<td>" . $formattedStartTime . "</td>",
-                                "<td>" . $formattedEndTime . "</td>";
+                        echo "<tr>",
+                            "<td>" . $counter++ . "</td>",
+                            "<td>" . htmlspecialchars($row['title']) . "</td>",
+                            "<td>" . htmlspecialchars($row['event_date']) . "</td>",
+                            "<td>" . $formattedStartTime . "</td>",
+                            "<td>" . $formattedEndTime . "</td>";
 
-                            $evalStmt = $conn->prepare("SELECT AVG((organization_1 + organization_2 + organization_3 + materials_1 + materials_2 + speaker_1 + speaker_2 + speaker_3 + speaker_4 + speaker_5 + overall_1 + overall_2)/12) as average_rating FROM event_evaluations WHERE user_id = ? AND event_id = ?");
-                            $evalStmt->bind_param("ii", $user_id, $row['id']);
-                            $evalStmt->execute();
-                            $evalStmt->bind_result($average);
-                            $evalStmt->fetch();
-                            $evalStmt->close();
+                        // Use average rating if available, otherwise check violation, otherwise let evaluate
+                        $evalStmt = $conn->prepare("SELECT AVG((organization_1 + organization_2 + organization_3 + materials_1 + materials_2 + speaker_1 + speaker_2 + speaker_3 + speaker_4 + speaker_5 + overall_1 + overall_2)/12) as average_rating FROM event_evaluations WHERE user_id = ? AND event_id = ?");
+                        $evalStmt->bind_param("ii", $user_id, $row['id']);
+                        $evalStmt->execute();
+                        $evalStmt->bind_result($average);
+                        $evalStmt->fetch();
+                        $evalStmt->close();
 
-                            if ($currentDateTime > $eventDateTime) {
-                                echo "<td class='action-btns'>";
-                                if ($average) {
-                                    echo "<button class='btn readonly-btn'><i class='fa fa-star' style='color:gold;'></i> Rating: " . round($average, 2) . "</button>",
-                                         "<form action='archive_event.php' method='post' style='display:inline;'>",
-                                         "<input type='hidden' name='event_id' value='" . $row['id'] . "'>",
-                                         "<button type='submit' class='btn'><i class='fa fa-archive'></i> Archive</button>",
-                                         "</form>";
-                                } else {
-                                    echo "<form action='set_event_session.php' method='post'>",
-                                         "<input type='hidden' name='event_id' value='" . $row['id'] . "'>",
-                                         "<button type='submit' class='btn'><i class='fa fa-star'></i> Evaluate</button>",
-                                         "</form>";
-                                }
-                                echo "</td>";
-                            } else {
-                                echo "<td class='action-btns'>",
-                                     "<form action='delete_event_attendance.php' method='post'>",
+                        echo "<td class='action-btns'>";
+                        if ($eventPassed) {
+                            if ($average) {
+                                echo "<button class='btn readonly-btn'><i class='fa fa-star' style='color:gold;'></i> Rating: " . round($average, 2) . "</button>",
+                                     "<form action='archive_event.php' method='post' style='display:inline;'>",
                                      "<input type='hidden' name='event_id' value='" . $row['id'] . "'>",
-                                     "<button type='submit' class='btn unattend-btn'><i class='fa fa-times'></i> Unattend</button>",
-                                     "</form>",
-                                     "</td>";
+                                     "<button type='submit' class='btn'><i class='fa fa-archive'></i> Archive</button>",
+                                     "</form>";
+                            } else if ($daysSinceEvent > 2) {
+                                // Insert violation if not already present
+                                $checkViolation = $conn->prepare("SELECT 1 FROM user_violations WHERE user_id = ? AND event_id = ? LIMIT 1");
+                                $checkViolation->bind_param("ii", $user_id, $row['id']);
+                                $checkViolation->execute();
+                                $checkViolation->store_result();
+                                if ($checkViolation->num_rows === 0) {
+                                    $checkViolation->close();
+                                    $violationStmt = $conn->prepare("INSERT INTO user_violations (user_id, event_id, remarks) VALUES (?, ?, 'No evaluation submitted within 2 days')");
+                                    $violationStmt->bind_param("ii", $user_id, $row['id']);
+                                    $violationStmt->execute();
+                                    $violationStmt->close();
+                                } else {
+                                    $checkViolation->close();
+                                }
+                                echo "<button class='btn violation-btn'><i class='fa fa-exclamation-triangle'></i> Violation</button>";
+                            } else {
+                                echo "<form action='set_event_session.php' method='post'>",
+                                     "<input type='hidden' name='event_id' value='" . $row['id'] . "'>",
+                                     "<button type='submit' class='btn'><i class='fa fa-star'></i> Evaluate</button>",
+                                     "</form>";
                             }
-
-                            echo "</tr>";
+                        } else {
+                            echo "<form action='delete_event_attendance.php' method='post'>",
+                                 "<input type='hidden' name='event_id' value='" . $row['id'] . "'>",
+                                 "<button type='submit' class='btn unattend-btn'><i class='fa fa-times'></i> Unattend</button>",
+                                 "</form>";
                         }
-                    } else {
-                        echo "<tr><td colspan='6' style='text-align: center; color: red;'>You are not attending any events.</td></tr>";
+                        echo "</td></tr>";
                     }
                     $stmt->close();
                 }
@@ -179,6 +193,7 @@ session_start();
             <h2>Upcoming Events</h2>
             <?php
                 require 'connecting/connect.php';
+                $user_id = $_SESSION['user_id'];
                 $query = "SELECT e.id, e.title, e.event_date, e.start_time, e.end_time, e.description, 
                                  (SELECT COUNT(*) FROM event_attendance ea WHERE ea.event_id = e.id) AS attendee_count 
                           FROM events e ORDER BY e.event_date ASC";
