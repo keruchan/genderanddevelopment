@@ -101,6 +101,7 @@ session_start();
     <?php include_once('temp/navigation.php'); ?>
     <div class="container">
         <h2>List of Events Attended</h2>
+        <p style="color: red; font-weight: bold; text-align: center;">Note: Users with 3 violations will be automatically blocked.</p>
         <table>
             <tr>
                 <th>#</th>
@@ -137,7 +138,6 @@ session_start();
                             "<td>" . $formattedStartTime . "</td>",
                             "<td>" . $formattedEndTime . "</td>";
 
-                        // Use average rating if available, otherwise check violation, otherwise let evaluate
                         $evalStmt = $conn->prepare("SELECT AVG((organization_1 + organization_2 + organization_3 + materials_1 + materials_2 + speaker_1 + speaker_2 + speaker_3 + speaker_4 + speaker_5 + overall_1 + overall_2)/12) as average_rating FROM event_evaluations WHERE user_id = ? AND event_id = ?");
                         $evalStmt->bind_param("ii", $user_id, $row['id']);
                         $evalStmt->execute();
@@ -154,7 +154,6 @@ session_start();
                                      "<button type='submit' class='btn'><i class='fa fa-archive'></i> Archive</button>",
                                      "</form>";
                             } else if ($daysSinceEvent > 2) {
-                                // Insert violation if not already present
                                 $checkViolation = $conn->prepare("SELECT 1 FROM user_violations WHERE user_id = ? AND event_id = ? LIMIT 1");
                                 $checkViolation->bind_param("ii", $user_id, $row['id']);
                                 $checkViolation->execute();
@@ -165,6 +164,14 @@ session_start();
                                     $violationStmt->bind_param("ii", $user_id, $row['id']);
                                     $violationStmt->execute();
                                     $violationStmt->close();
+
+                                    $notif = $conn->prepare("INSERT INTO notifications (user_id, title, message, type, is_read, created_at) VALUES (?, ?, ?, ?, 0, NOW())");
+                                    $title = "Violation Issued";
+                                    $msg = "You have received a violation for not evaluating the event: " . $row['title'];
+                                    $type = "violation";
+                                    $notif->bind_param("isss", $user_id, $title, $msg, $type);
+                                    $notif->execute();
+                                    $notif->close();
                                 } else {
                                     $checkViolation->close();
                                 }

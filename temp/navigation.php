@@ -77,6 +77,7 @@ if (isset($_SESSION['user_id'])) {
                         if ($notif['type'] === 'request') $link = 'view_requests.php';
                         elseif ($notif['type'] === 'event') $link = 'event_list.php';
                         elseif ($notif['type'] === 'security') $link = 'user_update.php';
+                        elseif ($notif['type'] === 'violation') $link = 'event_lists.php';
                         ?>
                         <li>
                             <a href="<?= $link ?>" data-id="<?= $notif['id'] ?>" class="notif-link <?= $notif['is_read'] == 0 ? 'unread' : '' ?>">

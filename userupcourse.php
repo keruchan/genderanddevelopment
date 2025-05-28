@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="admin-wrapper">
 
     <!-- Admin Content -->
-    <h2 class="form-title heading" style="font-size: 50px;">User Registration - Page 2</h2>
+    <h2 class="form-title heading" style="font-size: 50px;">User Registration</h2>
 
     <div class="auther-content">
         <form action="userupcredentials.php" method="post">

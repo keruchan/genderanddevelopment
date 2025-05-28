@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="admin-wrapper">
 
     <!-- Admin Content -->
-    <h2 class="form-title heading" style="font-size: 50px;">User Registration - Page 1</h2>
+    <h2 class="form-title heading" style="font-size: 50px;">User Registration</h2>
 
     <div class="auther-content">
         <form id="registrationForm" action="userupcourse.php" method="post" enctype="multipart/form-data" onsubmit="return checkEmailExists();">

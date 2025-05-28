@@ -1,8 +1,7 @@
 <?php
 session_start();
-require 'connecting/connect.php'; // Ensure correct path
+require 'connecting/connect.php';
 
-// Check if the form is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = $_POST['title'];
     $description = $_POST['description'];
@@ -11,27 +10,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $end_time = $_POST['end_time'];
     $attachment = $_FILES['attachment']['name'];
 
-    // Validate the event date to be greater than today
     $current_date = date('Y-m-d');
     if ($event_date <= $current_date) {
         echo "<script>alert('The event date must be greater than the current date.');</script>";
     } else {
-        // Handle file upload
-        $target_dir = "attachments/";
-        $target_file = $target_dir . basename($attachment);
-        if (!empty($attachment)) {
-            move_uploaded_file($_FILES["attachment"]["tmp_name"], $target_file);
+        $overlapCheck = $conn->prepare("
+            SELECT 1 FROM events 
+            WHERE event_date = ?
+              AND (
+                    (start_time <= ? AND end_time > ?) OR
+                    (start_time < ? AND end_time >= ?) OR
+                    (start_time >= ? AND end_time <= ?)
+              )
+            LIMIT 1
+        ");
+        $overlapCheck->bind_param("sssssss", $event_date, $start_time, $start_time, $end_time, $end_time, $start_time, $end_time);
+        $overlapCheck->execute();
+        $overlapCheck->store_result();
+
+        if ($overlapCheck->num_rows > 0) {
+            echo "<script>alert('Error: Another event is already scheduled at this date and time.');</script>";
+        } else {
+            $target_dir = "attachments/";
+            $target_file = $target_dir . basename($attachment);
+            if (!empty($attachment)) {
+                move_uploaded_file($_FILES["attachment"]["tmp_name"], $target_file);
+            }
+
+            $stmt = $conn->prepare("INSERT INTO events (title, description, event_date, start_time, end_time, attachment_path) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssssss", $title, $description, $event_date, $start_time, $end_time, $attachment);
+            if ($stmt->execute()) {
+                echo "<script>alert('Event added successfully!');</script>";
+            } else {
+                echo "<script>alert('Failed to add event.');</script>";
+            }
+            $stmt->close();
         }
 
-        // Insert event into the database
-        $stmt = $conn->prepare("INSERT INTO events (title, description, event_date, start_time, end_time, attachment_path) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssss", $title, $description, $event_date, $start_time, $end_time, $attachment);
-        if ($stmt->execute()) {
-            echo "<script>alert('Event added successfully!');</script>";
-        } else {
-            echo "<script>alert('Failed to add event.');</script>";
-        }
-        $stmt->close();
+        $overlapCheck->close();
     }
 }
 ?>
@@ -104,7 +120,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 18px;
-
         }
         .form-wrap input[type="file"] {
             padding: 0;
@@ -127,7 +142,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-
     <div class="container">
         <div class="form-wrap">
             <h1>Upload New Event</h1>
@@ -158,7 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script>
         function validateEventDate() {
             const eventDate = document.getElementById('event_date').value;
-            const currentDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
+            const currentDate = new Date().toISOString().split('T')[0];
 
             if (eventDate <= currentDate) {
                 alert('The event date must be greater than the current date.');
@@ -167,6 +181,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             return true;
         }
     </script>
-
 </body>
 </html>
