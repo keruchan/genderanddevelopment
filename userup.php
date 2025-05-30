@@ -112,9 +112,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
             <div>
                 <label class="required-label">
-                    <input type="text" name="contact" class="text-input" placeholder="Contact Number (09123456789 or +639123456789)" required 
-                           pattern="(\+639\d{9}|09\d{9})" 
-                           title="Enter a valid contact number (09123456789 or +639123456789)">
+                <input type="text" name="contact" class="text-input" placeholder="Contact Number (09123456789 or +639123456789)" required 
+       pattern="(\+639\d{9}|09\d{9})" 
+       title="Enter a valid contact number (09123456789 or +639123456789)" 
+       oninput="this.value = this.value.replace(/(?!^\+)[^\d]/g, '')">
+
                     <span class="required-asterisk">*</span>
                 </label>
             </div>

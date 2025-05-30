@@ -53,14 +53,14 @@ $stmt->close();
 
 // Fetch upcoming events from the database with optional filtering by month
 if (!empty($selectedMonth) && $selectedMonth !== 'all') {
-    $stmt = $conn->prepare("SELECT id, title, description, event_date, start_time, end_time, attachment_path, attendees FROM events WHERE MONTH(event_date) = ? AND event_date >= CURDATE() ORDER BY event_date DESC");
+    $stmt = $conn->prepare("SELECT id, title, description, event_date, start_time, end_time, attachment_path, attendees, max_participants FROM events WHERE MONTH(event_date) = ? AND event_date >= CURDATE() ORDER BY event_date DESC");
     $stmt->bind_param("s", $selectedMonth);
 } else {
-    $stmt = $conn->prepare("SELECT id, title, description, event_date, start_time, end_time, attachment_path, attendees FROM events WHERE event_date >= CURDATE() ORDER BY event_date DESC");
+    $stmt = $conn->prepare("SELECT id, title, description, event_date, start_time, end_time, attachment_path, attendees, max_participants FROM events WHERE event_date >= CURDATE() ORDER BY event_date DESC");
 }
 
 $stmt->execute();
-$stmt->bind_result($eventId, $eventTitle, $eventDescription, $eventDate, $eventStartTime, $eventEndTime, $eventAttachment, $eventAttendees);
+$stmt->bind_result($eventId, $eventTitle, $eventDescription, $eventDate, $eventStartTime, $eventEndTime, $eventAttachment, $eventAttendees, $eventMaxParticipants);
 $events = [];
 while ($stmt->fetch()) {
     // Format start_time and end_time to 12-hour AM/PM format
@@ -75,7 +75,8 @@ while ($stmt->fetch()) {
         'start_time' => $formattedStartTime,
         'end_time' => $formattedEndTime,
         'attachment_path' => $eventAttachment,
-        'attendees' => $eventAttendees
+        'attendees' => $eventAttendees,
+        'max_participants' => $eventMaxParticipants
     ];
 }
 $stmt->close();
@@ -130,6 +131,7 @@ $stmt->close();
                         $userId = $_SESSION['user_id'] ?? null;
                         $eventId = $event['id'];
                         $isAttending = false;
+                        $availableSeats = (int)$event['max_participants'] - (int)$event['attendees'];
 
                         if ($userId) {
                             $stmt = $conn->prepare("SELECT id FROM event_attendance WHERE user_id = ? AND event_id = ?");
@@ -145,6 +147,10 @@ $stmt->close();
 
                         if ($isAttending): ?>
                             <p style="color: green; font-weight: bold;">✔ You are already attending this event.</p>
+                        <?php elseif ($availableSeats <= 0): ?>
+                            <button type="button" class="btn" disabled style="background-color: #ccc; cursor: not-allowed;">
+                                <i class="fa fa-times"></i> Full
+                            </button>
                         <?php else: ?>
                             <form action="attend_event.php" method="post" onsubmit="return checkLogin()">
                                 <input type="hidden" name="event_id" value="<?php echo $eventId; ?>">
@@ -152,7 +158,9 @@ $stmt->close();
                             </form>
                         <?php endif; ?>
 
-                        <p>Attendees: <?php echo (int) $event['attendees']; ?></p>
+                        <p>Attendees: <?php echo (int) $event['attendees']; ?> | 
+                        Available seats: <?php echo $availableSeats; ?>
+                        </p>
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -194,6 +202,8 @@ $stmt->close();
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     overflow: hidden; /* Prevent content overflow */
     background-color: #fff; /* Add a white background for better readability */
+    min-height: unset; /* Ensure no fixed min-height */
+    height: auto !important; /* Force auto height override */
 }
 
 .event-container .post-image {

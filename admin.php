@@ -3,50 +3,57 @@
 <?php
 require 'connecting/connect.php';
 
-// --- Fetch stats for cards ---
 $totalUsers = $conn->query("SELECT COUNT(id) AS total FROM users")->fetch_assoc()['total'];
 $totalRequests = $conn->query("SELECT COUNT(id) AS total FROM requests")->fetch_assoc()['total'];
 $totalEvents = $conn->query("SELECT COUNT(id) AS total FROM events")->fetch_assoc()['total'];
 $totalPosts = $conn->query("SELECT COUNT(id) AS total FROM stories")->fetch_assoc()['total'];
 
-// --- Fetching monthly request data ---
-$monthlyData = include('fetch_monthly_requests.php');
-$months = $monthlyData['months'];
-$requestsPerMonth = $monthlyData['requestsPerMonth'];
+$predictedMonths = isset($_GET['predict']) ? (int)$_GET['predict'] : 1;
+$currentDate = new DateTime("2025-05-01");
+$labels = [];
+$yearLabels = [];
+$data = [];
 
-// --- Predict months selection ---
-$predictedMonths = isset($_GET['predict']) ? max(1, min(3, (int)$_GET['predict'])) : 1;
+$maxMonth = 0;
+$maxYear = 0;
 
-// --- Forecast function (simple moving average) ---
-function forecastMovingAverage($data, $windowSize) {
-    if (empty($data)) return 0;
-    $window = array_slice($data, -$windowSize);
-    $forecast = array_sum($window) / count($window);
-    return round($forecast);
-}
+for ($i = 11; $i >= 0; $i--) {
+    $date = (clone $currentDate)->modify("-$i month");
+    $month = (int)$date->format("n");
+    $year = (int)$date->format("Y");
+    $labels[] = $date->format("F");
+    $yearLabels[] = $year;
 
-// --- Forecast for n months ---
-$forecastedRequests = [];
-for ($i = 0; $i < $predictedMonths; $i++) {
-    if (count($requestsPerMonth) >= 3) {
-        $forecast = forecastMovingAverage($requestsPerMonth, 3);
-        $forecastedRequests[] = $forecast;
-        $requestsPerMonth[] = $forecast;
-    } else {
-        $forecastedRequests[] = 0;
-        $requestsPerMonth[] = 0;
+    if ($year > $maxYear || ($year === $maxYear && $month > $maxMonth)) {
+        $maxMonth = $month;
+        $maxYear = $year;
     }
-    // Add month label
-    $lastTs = strtotime(end($months) . ' 1 ' . date('Y'));
-    $nextMonthTs = strtotime('+1 month', $lastTs);
-    $months[] = date('F', $nextMonthTs);
+
+    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM requests WHERE MONTH(created_at) = ? AND YEAR(created_at) = ?");
+    $stmt->bind_param("ii", $month, $year);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $count = $result ? $result->fetch_assoc()['count'] : 0;
+    $data[] = (int)$count;
+    $stmt->close();
 }
 
-// --- Filters for graph ---
-$monthFilter = isset($_GET['month']) ? $_GET['month'] : '';
-$yearFilter = isset($_GET['year']) ? $_GET['year'] : '';
-?>
+for ($p = 0; $p < $predictedMonths; $p++) {
+    $nextMonth = $maxMonth + 1;
+    $nextYear = $maxYear;
+    if ($nextMonth > 12) {
+        $nextMonth = 1;
+        $nextYear++;
+    }
+    $lastThree = array_slice($data, -3);
+    $data[] = round(array_sum($lastThree) / max(count($lastThree), 1));
+    $labels[] = date('F', mktime(0, 0, 0, $nextMonth, 1));
+    $yearLabels[] = $nextYear;
+    $maxMonth = $nextMonth;
+    $maxYear = $nextYear;
+}
 
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -61,61 +68,32 @@ $yearFilter = isset($_GET['year']) ? $_GET['year'] : '';
     .card { flex: 1 1 200px; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .card h2 { margin: 10px 0; font-size: 28px; }
     .card p { color: gray; margin: 0; }
-    .charts { display: flex; flex-wrap: wrap; gap: 20px; padding: 20px; }
-    .chart-container { flex: 1 1 300px; min-width: 280px; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .chart-container canvas { width: 100% !important; height: 300px !important; }
-    .filter-container {
-      background: #f9f9f9;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      margin-bottom: 20px;
+    .chart-container {
+      max-width: 1000px;
+      margin: 2rem auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
-    .filter-container select, .filter-container button {
-      padding: 10px;
-      margin-right: 10px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-    .filter-container select {
-      width: 180px;
-    }
-    .filter-container button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    .filter-container button:hover {
-      background-color: #45a049;
-    }
-    .dashboard-nav {
+    .year-labels {
       display: flex;
-      justify-content: center;
-      gap: 2rem;
-      margin: 1rem auto;
-      padding: 1rem;
-      background: #d0eaff;
-      border-radius: 8px;
-      font-size: 1rem;
+      justify-content: space-between;
+      margin-top: 1rem;
+      padding: 0 2rem;
+      max-width: 1000px;
       font-weight: 600;
+      font-size: 0.85rem;
+      color: #666;
     }
-    .dashboard-nav a {
-      color: #333;
-      text-decoration: none;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-    }
-    .dashboard-nav a.active, .dashboard-nav a:hover {
-      background: #4CAF50;
-      color: white;
+    canvas {
+      max-height: 500px;
     }
     .predict-form {
       display: flex;
       justify-content: center;
       align-items: center;
-      margin: 2rem auto 0.5rem auto;
+      margin: 2rem auto;
       gap: 1rem;
       background: #f5f5f5;
       padding: 1rem 2rem;
@@ -146,10 +124,30 @@ $yearFilter = isset($_GET['year']) ? $_GET['year'] : '';
       color: #888;
       margin-bottom: 0.5rem;
     }
+    .dashboard-nav {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin: 1rem auto;
+      padding: 1rem;
+      background: #d0eaff;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .dashboard-nav a {
+      color: #333;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+    }
+    .dashboard-nav a.active, .dashboard-nav a:hover {
+      background: #4CAF50;
+      color: white;
+    }
   </style>
 </head>
 <body>
-
 <section class="stats">
   <div class="card"><h2><?= $totalUsers; ?></h2><p>Total Users</p></div>
   <div class="card"><h2><?= $totalRequests; ?></h2><p>Total Requests</p></div>
@@ -157,14 +155,12 @@ $yearFilter = isset($_GET['year']) ? $_GET['year'] : '';
   <div class="card"><h2><?= $totalPosts; ?></h2><p>Total Posts</p></div>
 </section>
 <section class="dashboard-nav">
-  <a href="admin.php"   class="active">Summary</a>
+  <a href="admin.php" class="active">Summary</a>
   <a href="admindash1.php">Requests/Time</a>
   <a href="admindash2.php">Feedback Word Cloud</a>
   <a href="admindash3.php">Ratings/Department</a>
   <a href="admindash4.php">Attendees/community</a>
 </section>
-
-<!-- Predict how many months ahead -->
 <div class="predict-form">
   <form method="GET">
     <label for="predict">Predict how many future months?</label>
@@ -177,49 +173,42 @@ $yearFilter = isset($_GET['year']) ? $_GET['year'] : '';
   </form>
 </div>
 <div class="legend-note">Dashed lines represent forecasted data based on the last 3 months' moving average.</div>
-
-<!-- Filters for Graph (Requests per Month) -->
-<section class="filter-container">
-  <form method="GET" style="display: flex; gap: 20px; align-items: center;">
-    <label for="month" style="font-weight: bold;">Month:</label>
-    <select name="month" id="month">
-      <option value="">All Months</option>
-      <?php foreach (['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] as $month): ?>
-        <option value="<?= $month; ?>" <?= $month === $monthFilter ? 'selected' : ''; ?>><?= $month; ?></option>
-      <?php endforeach; ?>
-    </select>
-    <label for="year" style="font-weight: bold;">Year:</label>
-    <select name="year" id="year">
-      <option value="">All Years</option>
-      <?php foreach (['2025', '2024', '2023'] as $year): ?>
-        <option value="<?= $year; ?>" <?= $year === $yearFilter ? 'selected' : ''; ?>><?= $year; ?></option>
-      <?php endforeach; ?>
-    </select>
-    <button type="submit">Apply Filters</button>
-  </form>
-</section>
-
-<section class="charts">
-  <div class="chart-container">
-    <h3>Requests (With Forecasted Month<?= $predictedMonths > 1 ? 's' : '' ?>)</h3>
-    <canvas id="requestsChart"></canvas>
-  </div>
-</section>
-
+<div class="chart-container">
+  <h2 style="text-align:center; font-weight:700; color:#333;">Request Counts with Forecast</h2>
+  <canvas id="forecastChart"></canvas>
+  <div class="year-labels" id="yearLabels"></div>
+</div>
 <script>
-const months = <?= json_encode($months) ?>;
-const data = <?= json_encode($requestsPerMonth) ?>;
-const predictedMonths = <?= $predictedMonths ?>;
-const predictionStartIndex = months.length - predictedMonths;
+const labels = <?= json_encode($labels) ?>;
+const yearLabels = <?= json_encode($yearLabels) ?>;
+const data = <?= json_encode($data) ?>;
+const predictionStartIndex = labels.length - <?= $predictedMonths ?>;
 
-// Chart.js line with dashed forecast
-const ctx = document.getElementById('requestsChart').getContext('2d');
+function renderYearLabels(labels, yearLabels) {
+  let html = '';
+  let i = 0;
+  while (i < labels.length) {
+    const currentYear = yearLabels[i];
+    let count = 1;
+    for (let j = i + 1; j < labels.length; j++) {
+      if (yearLabels[j] !== currentYear) break;
+      count++;
+    }
+    html += `<span style="flex:${count}; text-align:center;">(${currentYear})</span>`;
+    i += count;
+  }
+  document.getElementById('yearLabels').innerHTML = html;
+}
+renderYearLabels(labels, yearLabels);
+
+const ctx = document.getElementById('forecastChart').getContext('2d');
+
 new Chart(ctx, {
   type: 'line',
   data: {
-    labels: months,
+    labels: labels,
     datasets: [{
-      label: 'Number of Requests',
+      label: 'Request Count',
       data: data,
       borderColor: 'green',
       backgroundColor: 'rgba(0,128,0,0.1)',
@@ -227,10 +216,7 @@ new Chart(ctx, {
       tension: 0.4,
       borderWidth: 3,
       segment: {
-        borderDash: ctx => {
-          // Dashed for forecasted months
-          return ctx.p0DataIndex >= predictionStartIndex - 1 ? [6, 6] : undefined;
-        }
+        borderDash: ctx => ctx.p0DataIndex >= predictionStartIndex - 1 ? [6, 6] : undefined
       },
       pointStyle: ctx => ctx.dataIndex >= predictionStartIndex ? 'rectRot' : 'circle',
       pointRadius: ctx => ctx.dataIndex >= predictionStartIndex ? 7 : 5,
@@ -239,8 +225,6 @@ new Chart(ctx, {
   },
   options: {
     responsive: true,
-    maintainAspectRatio: false,
-    interaction: { mode: 'index', intersect: false },
     plugins: {
       legend: {
         position: 'top',
@@ -256,12 +240,29 @@ new Chart(ctx, {
       }
     },
     scales: {
-      x: { beginAtZero: true, ticks: { font: { size: 13 } } },
-      y: { beginAtZero: true, ticks: { font: { size: 13 } }, grid: { color: '#e0e0e0', borderDash: [6, 6] } }
+      y: {
+        beginAtZero: true,
+        ticks: {
+          color: '#555',
+          font: { size: 13 }
+        },
+        grid: {
+          color: '#e0e0e0',
+          borderDash: [6, 6]
+        }
+      },
+      x: {
+        ticks: {
+          color: '#333',
+          font: { size: 13 }
+        },
+        grid: {
+          display: false
+        }
+      }
     }
   }
 });
 </script>
-
 </body>
 </html>

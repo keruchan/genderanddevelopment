@@ -3,25 +3,43 @@ include_once('temp/header.php');
 include_once('temp/navigationold.php');
 require 'connecting/connect.php';
 
-// Fetch archived user data from the `users` table where archived = 1
+// Fetch user data
 $userQuery = $conn->query("SELECT * FROM users WHERE archived = 0");
 $users = $userQuery->fetch_all(MYSQLI_ASSOC);
 
-// Fetch unique communities for filtering
+// Fetch unique communities
 $communityQuery = $conn->query("SELECT DISTINCT community FROM users WHERE archived = 0");
 $communitys = $communityQuery->fetch_all(MYSQLI_ASSOC);
+
+// Fetch unique departments
+$departmentQuery = $conn->query("SELECT DISTINCT department FROM users WHERE archived = 0");
+$departments = $departmentQuery->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <div class="user-management-container">
     <h1 style="font-size: 22px;">User Management</h1>
     <div class="filter-container">
-        <input type="text" id="searchBox" placeholder="Search users...">
-        <select id="communityFilter">
-            <option value="">All communitys</option>
-            <?php foreach ($communitys as $community) : ?>
-                <option value="<?= htmlspecialchars($community['community']) ?>"> <?= htmlspecialchars($community['community']) ?> </option>
-            <?php endforeach; ?>
-        </select>
+        <div class="filter-left">
+            <input type="text" id="searchBox" placeholder="Search users...">
+        </div>
+        <div class="filter-right">
+            <select id="communityFilter">
+                <option value="">All communitys</option>
+                <?php foreach ($communitys as $community) : ?>
+                    <option value="<?= htmlspecialchars($community['community']) ?>">
+                        <?= htmlspecialchars($community['community']) ?> 
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <select id="departmentFilter">
+                <option value="">All departments</option>
+                <?php foreach ($departments as $dept) : ?>
+                    <option value="<?= htmlspecialchars($dept['department']) ?>">
+                        <?= htmlspecialchars($dept['department']) ?> 
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
     </div>
     <table id="usersTable">
         <thead>
@@ -36,7 +54,9 @@ $communitys = $communityQuery->fetch_all(MYSQLI_ASSOC);
         </thead>
         <tbody>
             <?php foreach ($users as $user) : ?>
-                <tr class="user-row" data-community="<?= htmlspecialchars($user['community']) ?>">
+                <tr class="user-row"
+                    data-community="<?= htmlspecialchars($user['community']) ?>"
+                    data-department="<?= htmlspecialchars($user['department']) ?>">
                     <td><?= $user['id'] ?></td>
                     <td><?= htmlspecialchars($user['lastname']) ?></td>
                     <td><?= htmlspecialchars($user['firstname']) ?></td>
@@ -47,11 +67,10 @@ $communitys = $communityQuery->fetch_all(MYSQLI_ASSOC);
                             <i class="fas fa-eye"></i>
                         </button>
                         <a href="admin_userpasswordupdate.php?id=<?= $user['id'] ?>">
-    <button class="action-btn edit-btn">
-        <i class="fas fa-edit"></i>
-    </button>
-</a>
-
+                            <button class="action-btn edit-btn">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </a>
                         <a href="delete_user.php?id=<?= $user['id'] ?>" onclick="return confirm('Are you sure you want to archive user?');">
                             <button class="action-btn delete-btn">
                                 <i class="fas fa-archive"></i>
@@ -91,34 +110,29 @@ $communitys = $communityQuery->fetch_all(MYSQLI_ASSOC);
 </div>
 
 <script>
-    // Search Filter
-    document.getElementById('searchBox').addEventListener('input', function () {
-        let filter = this.value.toLowerCase();
-        let rows = document.querySelectorAll('#usersTable tbody tr');
-        rows.forEach(row => {
-            let text = row.innerText.toLowerCase();
-            row.style.display = text.includes(filter) ? '' : 'none';
-        });
-    });
+    // Combined Filter for search, community, and department
+    document.getElementById('searchBox').addEventListener('input', applyFilters);
+    document.getElementById('communityFilter').addEventListener('change', applyFilters);
+    document.getElementById('departmentFilter').addEventListener('change', applyFilters);
 
-    // community Filter
-    document.getElementById('communityFilter').addEventListener('change', function () {
-        let selectedcommunity = this.value.toLowerCase();
+    function applyFilters() {
+        let filter = document.getElementById('searchBox').value.toLowerCase();
+        let selectedCommunity = document.getElementById('communityFilter').value.toLowerCase();
+        let selectedDepartment = document.getElementById('departmentFilter').value.toLowerCase();
         let rows = document.querySelectorAll('#usersTable tbody tr');
-        
         rows.forEach(row => {
-            let community = row.getAttribute('data-community').toLowerCase();
-            if (!selectedcommunity || community === selectedcommunity) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
+            let rowText = row.innerText.toLowerCase();
+            let rowCommunity = row.getAttribute('data-community') ? row.getAttribute('data-community').toLowerCase() : '';
+            let rowDepartment = row.getAttribute('data-department') ? row.getAttribute('data-department').toLowerCase() : '';
+            let matchSearch = rowText.includes(filter);
+            let matchCommunity = !selectedCommunity || rowCommunity === selectedCommunity;
+            let matchDepartment = !selectedDepartment || rowDepartment === selectedDepartment;
+            row.style.display = (matchSearch && matchCommunity && matchDepartment) ? '' : 'none';
         });
-    });
+    }
 
     // Function to view user details in the modal
     function viewUser(user) {
-        console.log('viewUser function called with:', user); // Debugging log
         document.getElementById("modal_id").innerText = user.id || 'N/A';
         document.getElementById("modal_age").innerText = user.age || 'N/A';
         document.getElementById("modal_email").innerText = user.email || 'N/A';
@@ -127,26 +141,16 @@ $communitys = $communityQuery->fetch_all(MYSQLI_ASSOC);
         document.getElementById("modal_year").innerText = user.yearr || 'N/A';
         document.getElementById("modal_username").innerText = user.username || 'N/A';
 
-        // Use the full path of the profile picture from the database
         document.getElementById("modal_profilepic").src = user.profilepic || 'default-profile-pic.jpg';
-
-        // Concatenate last name, first name
         document.getElementById("modal_fullname").innerText = `${user.lastname || ''}, ${user.firstname || ''}`;
-
-        // Concatenate course and department
         document.getElementById("modal_course_department").innerText = `${user.course || 'N/A'}, ${user.department || 'N/A'}`;
-
-        // Bind community
         document.getElementById("modal_community").innerText = `${user.community || 'N/A'}`;
 
-        // Show the modal
-        let modal = document.getElementById("userModal");
-        modal.style.display = "flex";
+        document.getElementById("userModal").style.display = "flex";
     }
 
     // Close the modal
     function closeModal() {
-        console.log('closeModal function called'); // Debugging log
         document.getElementById("userModal").style.display = "none";
     }
 </script>
@@ -159,9 +163,22 @@ $communitys = $communityQuery->fetch_all(MYSQLI_ASSOC);
     .filter-container {
         display: flex;
         justify-content: space-between;
+        align-items: center;
         margin-bottom: 10px;
+        gap: 20px;
     }
-    #searchBox, #communityFilter {
+    .filter-left {
+        flex: 1;
+        display: flex;
+        justify-content: flex-start;
+    }
+    .filter-right {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        align-items: center;
+    }
+    #searchBox, #communityFilter, #departmentFilter {
         padding: 8px;
         border: 1px solid #ccc;
         border-radius: 4px;
@@ -188,8 +205,6 @@ $communitys = $communityQuery->fetch_all(MYSQLI_ASSOC);
     .view-btn { color: #007bff; }
     .edit-btn { color: #28a745; }
     .delete-btn { color: #dc3545; }
-    
-    /* Modal Styling */
     .modal {
         display: none;
         position: fixed;

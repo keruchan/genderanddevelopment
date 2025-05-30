@@ -8,6 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $event_date = $_POST['event_date'];
     $start_time = $_POST['start_time'];
     $end_time = $_POST['end_time'];
+    $max_participants = $_POST['max_participants'];
     $attachment = $_FILES['attachment']['name'];
 
     $current_date = date('Y-m-d');
@@ -37,8 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 move_uploaded_file($_FILES["attachment"]["tmp_name"], $target_file);
             }
 
-            $stmt = $conn->prepare("INSERT INTO events (title, description, event_date, start_time, end_time, attachment_path) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("ssssss", $title, $description, $event_date, $start_time, $end_time, $attachment);
+            $stmt = $conn->prepare("INSERT INTO events (title, description, event_date, start_time, end_time, max_participants, attachment_path) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("sssssis", $title, $description, $event_date, $start_time, $end_time, $max_participants, $attachment);
             if ($stmt->execute()) {
                 echo "<script>alert('Event added successfully!');</script>";
             } else {
@@ -161,6 +162,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="end_time">End Time</label>
                 <input type="time" id="end_time" name="end_time" required>
 
+                <label for="max_participants">Max Number of Participants <small>(default: 100)</small></label>
+                <input type="number" id="max_participants" name="max_participants" min="1" value="100" required>
+
                 <label for="attachment">Attachment</label>
                 <input type="file" id="attachment" name="attachment">
 
@@ -175,7 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const currentDate = new Date().toISOString().split('T')[0];
 
             if (eventDate <= currentDate) {
-                alert('The event date must be greater than the current date.');
+                alert('Unsuccessful!');
                 return false;
             }
             return true;
