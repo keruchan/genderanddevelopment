@@ -55,7 +55,7 @@
   }
 
   .info-list li {
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.6rem;
     color: #444;
   }
 
@@ -127,24 +127,16 @@
     <div class="highlight-box">
       <p>These are challenges or issues you might encounter related to gender and development:</p>
       <ul class="info-list">
-        <li>Unfair or unequal treatment based on gender, sexual orientation, or family status</li>
-        <li>Bullying, harassment, or discrimination based on identity</li>
-        <li>Feeling unsafe or excluded due to pregnancy, disability, or gender expression</li>
-        <li>Stigma or judgment linked to gender roles or identity</li>
+        <li><strong>1. Gender-Based Discrimination:</strong> Unfair treatment based on gender, often resulting in unequal access to opportunities in schools, workplaces, and society.</li>
+        <li><strong>2. Lack of Gender Sensitivity:</strong> The absence of awareness or respect for different gender roles and identities, leading to biased decisions or exclusion.</li>
+        <li><strong>3. Sexual Harassment and Abuse:</strong> Unwanted sexual behavior or advances that harm an individual's safety, dignity, or mental well-being.</li>
+        <li><strong>4. Lack of Safe Spaces:</strong> Environments where individuals feel unsafe, judged, or unable to express themselves freely due to fear or discrimination.</li>
+        <li><strong>5. Limited Representation:</strong> Underrepresentation of women and LGBTQ+ individuals in leadership and decision-making roles, limiting diverse perspectives.</li>
+        <li><strong>6. Teenage Pregnancy Stigma:</strong> Discrimination or shame directed at young parents that impacts their mental health and academic future.</li>
+        <li><strong>7. Others:</strong> This may include gender pay gaps, access to healthcare, or rigid gender stereotypes affecting daily life.</li>
       </ul>
       <p class="note">If you are facing any of these situations, it is considered a <strong>GAD-related concern</strong>.</p>
     </div>
-
-    <h3 class="section-title" style="font-size: 1.2rem;">Common Concerns</h3>
-    <ul class="info-list">
-      <li>1. Gender-based discrimination</li>
-      <li>2. Lack of gender sensitivity</li>
-      <li>3. Sexual harassment and abuse</li>
-      <li>4. Lack of safe spaces</li>
-      <li>5. Limited representation</li>
-      <li>6. Teenage pregnancy stigma</li>
-      <li>7. Others</li>
-    </ul>
 
     <div class="cta-container">
       <span class="cta-text">Have you experienced something similar?</span>
@@ -158,24 +150,16 @@
     <div class="highlight-box">
       <p>These are requests or support services that can help improve your experience as a student:</p>
       <ul class="info-list">
-        <li>Fair treatment and equal opportunities for all identities</li>
-        <li>Safe and inclusive environments for LGBTQ+ students, student-parents, and others</li>
-        <li>Awareness programs and education on gender sensitivity and inclusion</li>
-        <li>Flexible and responsive academic policies that accommodate diverse needs</li>
+        <li><strong>1. Equal Treatment and Opportunities:</strong> Ensuring fairness and equal chances for all genders in education, leadership, and resources.</li>
+        <li><strong>2. Gender Sensitivity Education:</strong> Promoting awareness and understanding through educational programs on gender issues and inclusivity.</li>
+        <li><strong>3. Safe and Inclusive Spaces:</strong> Creating supportive environments free from judgment, fear, or exclusion.</li>
+        <li><strong>4. Access to Gender-Responsive Support Services:</strong> Services tailored to specific gender needs to ensure appropriate and effective support.</li>
+        <li><strong>5. Clear Anti-Harassment and Anti-Discrimination Policies:</strong> Strong institutional policies that protect individuals and promote accountability.</li>
+        <li><strong>6. Support for Student-Parents:</strong> Academic flexibility, counseling, and childcare support for young parents continuing their education.</li>
+        <li><strong>7. Others:</strong> Further efforts may include improved access to healthcare, legal services, and leadership opportunities.</li>
       </ul>
       <p class="note">If you need any of the above, it qualifies as a <strong>GAD-related request</strong>.</p>
     </div>
-
-    <h3 class="section-title" style="font-size: 1.2rem;">Common Requests</h3>
-    <ul class="info-list">
-      <li>1. Equal treatment and opportunities</li>
-      <li>2. Gender sensitivity education</li>
-      <li>3. Safe and inclusive spaces</li>
-      <li>4. Access to gender-responsive support services</li>
-      <li>5. Clear anti-harassment and anti-discrimination policies</li>
-      <li>6. Support for student-parents</li>
-      <li>7. Others</li>
-    </ul>
 
     <div class="cta-container">
       <span class="cta-text">Would you like to request support or change?</span>
