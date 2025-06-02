@@ -5,7 +5,7 @@ require 'connecting/connect.php';
 
 // Fetch concern data with user info
 $concernQuery = $conn->query(
-    "SELECT c.id, u.lastname, u.firstname, c.concern_type, c.created_at, c.description, c.attachment, c.status, c.remarks
+    "SELECT c.id, u.lastname, u.firstname, u.department, c.concern_type, c.created_at, c.description, c.attachment, c.status, c.remarks
      FROM concerns c
      JOIN users u ON c.user_id = u.id"
 );
@@ -14,6 +14,10 @@ $concerns = $concernQuery->fetch_all(MYSQLI_ASSOC);
 // Fetch unique concern types for filtering
 $typeQuery = $conn->query("SELECT DISTINCT concern_type FROM concerns");
 $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
+
+// Fetch unique departments for filtering
+$deptQuery = $conn->query("SELECT DISTINCT department FROM users");
+$departments = $deptQuery->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <div class="request-management-container">
@@ -35,6 +39,14 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
                 <option value="rejected">Rejected</option>
                 <option value="pending">Pending</option>
             </select>
+            <select id="departmentFilter">
+                <option value="">All Departments</option>
+                <?php foreach ($departments as $dept) : ?>
+                    <option value="<?= htmlspecialchars($dept['department']) ?>">
+                        <?= htmlspecialchars($dept['department']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
         </div>
     </div>
     <table id="concernsTable">
@@ -42,6 +54,7 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
             <tr>
                 <th>Concern No.</th>
                 <th>Full Name</th>
+                <th>Department</th>
                 <th>Concern Type</th>
                 <th>Date</th>
                 <th>Status</th>
@@ -52,9 +65,11 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
             <?php foreach ($concerns as $concern) : ?>
                 <tr class="concern-row"
                     data-type="<?= htmlspecialchars($concern['concern_type']) ?>"
-                    data-status="<?= htmlspecialchars($concern['status']) ?>">
+                    data-status="<?= htmlspecialchars($concern['status']) ?>"
+                    data-department="<?= htmlspecialchars($concern['department']) ?>">
                     <td><?= $concern['id'] ?></td>
                     <td><?= htmlspecialchars($concern['lastname'] . ', ' . $concern['firstname']) ?></td>
+                    <td><?= htmlspecialchars($concern['department']) ?></td>
                     <td><?= htmlspecialchars($concern['concern_type']) ?></td>
                     <td><?= date('m/d/Y h:i:s A', strtotime($concern['created_at'])) ?></td>
                     <td class="status <?= strtolower(htmlspecialchars($concern['status'])) ?>"><?= htmlspecialchars($concern['status']) ?></td>
@@ -79,6 +94,7 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
         <h2>Concern Details</h2>
         <p><strong>Concern No:</strong> <span id="modalRequestNo"></span></p>
         <p><strong>Full Name:</strong> <span id="modalFullName"></span></p>
+        <p><strong>Department:</strong> <span id="modalDepartment"></span></p>
         <p><strong>Concern Type:</strong> <span id="modalcommunity"></span></p>
         <p><strong>Date:</strong> <span id="modalDate"></span></p>
         <p><strong>Status:</strong> <span id="modalStatus"></span></p>
@@ -105,40 +121,29 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
 </div>
 
 <script>
-    // Search Filter
-    document.getElementById('searchBox').addEventListener('input', function () {
-        filterConcerns();
-    });
-
-    // Type Filter
-    document.getElementById('typeFilter').addEventListener('change', function () {
-        filterConcerns();
-    });
-
-    // Status Filter
-    document.getElementById('statusFilter').addEventListener('change', function () {
-        filterConcerns();
-    });
+    document.getElementById('searchBox').addEventListener('input', filterConcerns);
+    document.getElementById('typeFilter').addEventListener('change', filterConcerns);
+    document.getElementById('statusFilter').addEventListener('change', filterConcerns);
+    document.getElementById('departmentFilter').addEventListener('change', filterConcerns);
 
     function filterConcerns() {
         let search = document.getElementById('searchBox').value.toLowerCase();
         let type = document.getElementById('typeFilter').value.toLowerCase();
         let status = document.getElementById('statusFilter').value.toLowerCase();
+        let department = document.getElementById('departmentFilter').value.toLowerCase();
         let rows = document.querySelectorAll('#concernsTable tbody tr');
 
         rows.forEach(row => {
             let text = row.innerText.toLowerCase();
             let rowType = row.getAttribute('data-type').toLowerCase();
             let rowStatus = row.getAttribute('data-status').toLowerCase();
+            let rowDepartment = row.getAttribute('data-department').toLowerCase();
             let searchMatch = text.includes(search);
             let typeMatch = !type || rowType === type;
             let statusMatch = !status || rowStatus === status;
+            let departmentMatch = !department || rowDepartment === department;
 
-            if (searchMatch && typeMatch && statusMatch) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
+            row.style.display = (searchMatch && typeMatch && statusMatch && departmentMatch) ? '' : 'none';
         });
     }
 
@@ -148,6 +153,7 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
         currentRequestId = request.id;
         document.getElementById("modalRequestNo").innerText = request.id;
         document.getElementById("modalFullName").innerText = request.lastname + ", " + request.firstname;
+        document.getElementById("modalDepartment").innerText = request.department;
         document.getElementById("modalcommunity").innerText = request.concern_type;
         document.getElementById("modalDate").innerText = formatTime(request.created_at);
         document.getElementById("modalStatus").innerText = request.status;
@@ -237,7 +243,6 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
         }
     }
 </script>
-
 <style>
     .request-management-container {
         padding: 20px;
@@ -260,7 +265,7 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
         display: flex;
         gap: 10px;
     }
-    #typeFilter, #statusFilter {
+    #typeFilter, #statusFilter, #departmentFilter {
         padding: 8px;
         border: 1px solid #ccc;
         border-radius: 4px;
@@ -319,7 +324,7 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
     }
     .modal-content {
         background-color: white;
-        padding: 20px;
+        padding: 10px;
         border-radius: 8px;
         width: 50%;
         text-align: left;
@@ -335,5 +340,4 @@ $types = $typeQuery->fetch_all(MYSQLI_ASSOC);
         cursor: pointer;
     }
 </style>
-
 <?php include_once('temp/footeradmin.php'); ?>
