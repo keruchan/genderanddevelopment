@@ -2,7 +2,7 @@
 session_start();
 require 'connecting/connect.php';
 
-$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$search = isset($_GET['search']) ? trim($_GET['search']) : '%';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resolve_user_id'])) {
     $resolve_user_id = intval($_POST['resolve_user_id']);
