@@ -3,6 +3,25 @@ session_start();
 require 'connecting/connect.php';
 
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resolve_user_id'])) {
+    $resolve_user_id = intval($_POST['resolve_user_id']);
+    $resolveStmt = $conn->prepare("UPDATE user_violations SET is_resolved = 1 WHERE user_id = ? AND is_resolved = 0");
+    $resolveStmt->bind_param("i", $resolve_user_id);
+    $resolveStmt->execute();
+    $resolveStmt->close();
+
+    $userStmt = $conn->prepare("SELECT firstname, lastname FROM users WHERE id = ?");
+    $userStmt->bind_param("i", $resolve_user_id);
+    $userStmt->execute();
+    $userResult = $userStmt->get_result();
+    $user = $userResult->fetch_assoc();
+    $userStmt->close();
+
+    $_SESSION['resolve_success'] = "Violations marked as resolved for " . htmlspecialchars($user['lastname'] . ', ' . $user['firstname']);
+    header("Location: " . $_SERVER['PHP_SELF'] . "?search=" . urlencode($search));
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -15,9 +34,9 @@ $search = isset($_GET['search']) ? trim($_GET['search']) : '';
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
             margin: 0;
             padding: 0;
-            background-color: #f4f6f9;
         }
         .container {
             max-width: 1100px;
@@ -81,6 +100,35 @@ $search = isset($_GET['search']) ? trim($_GET['search']) : '';
         .btn:hover {
             background-color: #0056b3;
         }
+        .btn-resolve {
+            background-color: #28a745;
+        }
+        .btn-resolve:hover {
+            background-color: #218838;
+        }
+        .alert-success {
+            padding: 12px;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+        }
+        .user-link {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .user-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -89,6 +137,12 @@ $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
     <div class="container">
         <h2>User Violations - Missing Evaluations</h2>
+
+        <?php if (isset($_SESSION['resolve_success'])): ?>
+            <div class="alert-success">
+                <?= $_SESSION['resolve_success']; unset($_SESSION['resolve_success']); ?>
+            </div>
+        <?php endif; ?>
 
         <div class="search-bar">
             <form method="GET">
@@ -120,16 +174,15 @@ $search = isset($_GET['search']) ? trim($_GET['search']) : '';
                       GROUP BY uv.user_id
                       ORDER BY min_id DESC";
             $stmt = $conn->prepare($query);
-            $searchTerm = $search;
-            $stmt->bind_param("ss", $searchTerm, $searchTerm);
+            $stmt->bind_param("ss", $search, $search);
             $stmt->execute();
             $result = $stmt->get_result();
             while ($row = $result->fetch_assoc()):
                 $fullName = htmlspecialchars($row['lastname'] . ', ' . $row['firstname']);
                 $violationCount = (int)$row['violation_count'];
                 $archived = (int)$row['archived'];
+                $queryName = urlencode($row['lastname'] . ', ' . $row['firstname']);
 
-                // Automatically block if 3 or more violations and not yet archived
                 if ($violationCount >= 3 && $archived == 0) {
                     $autoBlock = $conn->prepare("UPDATE users SET archived = 1 WHERE id = ?");
                     $autoBlock->bind_param("i", $row['user_id']);
@@ -139,25 +192,29 @@ $search = isset($_GET['search']) ? trim($_GET['search']) : '';
             ?>
             <tr>
                 <td><?= $counter++; ?></td>
-                <td><?= $fullName; ?></td>
+                <td><a class="user-link" href="usersadmin.php?search=<?= $queryName ?>"><?= $fullName; ?></a></td>
                 <td><?= $violationCount; ?></td>
                 <td><?= $row['event_info']; ?></td>
                 <td><?= htmlspecialchars($row['violation_type']); ?></td>
                 <td><?= htmlspecialchars($row['remarks']); ?></td>
                 <td>
-                    <?php
-                    if ($archived == 1) {
-                        echo '<form action="unblock_user.php" method="POST" style="display:inline-block;">
-                                <input type="hidden" name="user_id" value="' . $row['user_id'] . '">
+                    <div class="action-buttons">
+                        <?php if ($archived == 1): ?>
+                            <form action="unblock_user.php" method="POST">
+                                <input type="hidden" name="user_id" value="<?= $row['user_id']; ?>">
                                 <button type="submit" class="btn" style="background-color: orange;">Unblock</button>
-                              </form>';
-                    } else {
-                        echo '<form action="block_user.php" method="POST" style="display:inline-block;">
-                                <input type="hidden" name="user_id" value="' . $row['user_id'] . '">
+                            </form>
+                        <?php else: ?>
+                            <form action="block_user.php" method="POST">
+                                <input type="hidden" name="user_id" value="<?= $row['user_id']; ?>">
                                 <button type="submit" class="btn" style="background-color: red;">Block</button>
-                              </form>';
-                    }
-                    ?>
+                            </form>
+                        <?php endif; ?>
+                        <form action="" method="POST">
+                            <input type="hidden" name="resolve_user_id" value="<?= $row['user_id']; ?>">
+                            <button type="submit" class="btn btn-resolve">Resolved</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             <?php endwhile; ?>

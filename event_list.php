@@ -71,7 +71,7 @@ session_start();
             pointer-events: none;
         }
         .violation-btn {
-            background-color: gray;
+            background-color: red !important;
             color: white;
             cursor: not-allowed;
             pointer-events: none;
@@ -131,13 +131,7 @@ session_start();
                         $daysSinceEvent = $eventDateTime->diff($now)->days;
                         $eventPassed = $now > $eventDateTime;
 
-                        echo "<tr>",
-                            "<td>" . $counter++ . "</td>",
-                            "<td>" . htmlspecialchars($row['title']) . "</td>",
-                            "<td>" . htmlspecialchars($row['event_date']) . "</td>",
-                            "<td>" . $formattedStartTime . "</td>",
-                            "<td>" . $formattedEndTime . "</td>";
-
+                        // Get average rating if exists
                         $evalStmt = $conn->prepare("SELECT AVG((organization_1 + organization_2 + organization_3 + materials_1 + materials_2 + speaker_1 + speaker_2 + speaker_3 + speaker_4 + speaker_5 + overall_1 + overall_2)/12) as average_rating FROM event_evaluations WHERE user_id = ? AND event_id = ?");
                         $evalStmt->bind_param("ii", $user_id, $row['id']);
                         $evalStmt->execute();
@@ -145,21 +139,54 @@ session_start();
                         $evalStmt->fetch();
                         $evalStmt->close();
 
+                        // Violation check - get status before displaying row
+                        $skipRow = false;
+                        $hasViolation = false;
+
+                        if ($eventPassed && !$average && $daysSinceEvent > 2) {
+                            // Check for existing violation
+                            $checkViolation = $conn->prepare("SELECT id, is_resolved FROM user_violations WHERE user_id = ? AND event_id = ? LIMIT 1");
+                            $checkViolation->bind_param("ii", $user_id, $row['id']);
+                            $checkViolation->execute();
+                            $checkViolation->store_result();
+                            $checkViolation->bind_result($violationId, $isResolved);
+
+                            if ($checkViolation->num_rows > 0) {
+                                $checkViolation->fetch();
+                                // If resolved, skip display
+                                if ($isResolved == 1) {
+                                    $skipRow = true;
+                                } else {
+                                    $hasViolation = true;
+                                }
+                            }
+                            $checkViolation->close();
+                        }
+
+                        if ($skipRow) continue;
+
+                        echo "<tr>",
+                            "<td>" . $counter++ . "</td>",
+                            "<td>" . htmlspecialchars($row['title']) . "</td>",
+                            "<td>" . htmlspecialchars($row['event_date']) . "</td>",
+                            "<td>" . $formattedStartTime . "</td>",
+                            "<td>" . $formattedEndTime . "</td>";
+
                         echo "<td class='action-btns'>";
                         if ($eventPassed) {
                             if ($average) {
+                                // User already evaluated
                                 echo "<button class='btn readonly-btn'><i class='fa fa-star' style='color:gold;'></i> Rating: " . round($average, 2) . "</button>",
                                      "<form action='archive_event.php' method='post' style='display:inline;'>",
                                      "<input type='hidden' name='event_id' value='" . $row['id'] . "'>",
                                      "<button type='submit' class='btn'><i class='fa fa-archive'></i> Archive</button>",
                                      "</form>";
                             } else if ($daysSinceEvent > 2) {
-                                $checkViolation = $conn->prepare("SELECT 1 FROM user_violations WHERE user_id = ? AND event_id = ? LIMIT 1");
-                                $checkViolation->bind_param("ii", $user_id, $row['id']);
-                                $checkViolation->execute();
-                                $checkViolation->store_result();
-                                if ($checkViolation->num_rows === 0) {
-                                    $checkViolation->close();
+                                if ($hasViolation) {
+                                    // Show violation button if unresolved
+                                    echo "<button class='btn violation-btn'><i class='fa fa-exclamation-triangle'></i> Violation</button>";
+                                } else {
+                                    // No violation exists, so insert a new one and show the violation button
                                     $violationStmt = $conn->prepare("INSERT INTO user_violations (user_id, event_id, remarks) VALUES (?, ?, 'No evaluation submitted within 2 days')");
                                     $violationStmt->bind_param("ii", $user_id, $row['id']);
                                     $violationStmt->execute();
@@ -172,17 +199,18 @@ session_start();
                                     $notif->bind_param("isss", $user_id, $title, $msg, $type);
                                     $notif->execute();
                                     $notif->close();
-                                } else {
-                                    $checkViolation->close();
+
+                                    echo "<button class='btn violation-btn'><i class='fa fa-exclamation-triangle'></i> Violation</button>";
                                 }
-                                echo "<button class='btn violation-btn'><i class='fa fa-exclamation-triangle'></i> Violation</button>";
                             } else {
+                                // Show evaluate button if within 2 days and not yet evaluated
                                 echo "<form action='set_event_session.php' method='post'>",
                                      "<input type='hidden' name='event_id' value='" . $row['id'] . "'>",
                                      "<button type='submit' class='btn'><i class='fa fa-star'></i> Evaluate</button>",
                                      "</form>";
                             }
                         } else {
+                            // Option to unattend future events
                             echo "<form action='delete_event_attendance.php' method='post'>",
                                  "<input type='hidden' name='event_id' value='" . $row['id'] . "'>",
                                  "<button type='submit' class='btn unattend-btn'><i class='fa fa-times'></i> Unattend</button>",

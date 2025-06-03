@@ -20,7 +20,8 @@ $departments = $departmentQuery->fetch_all(MYSQLI_ASSOC);
     <h1 style="font-size: 22px;">User Management</h1>
     <div class="filter-container">
         <div class="filter-left">
-            <input type="text" id="searchBox" placeholder="Search users...">
+        <input type="text" id="searchBox" placeholder="Search users..." value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
+
         </div>
         <div class="filter-right">
             <select id="communityFilter">
@@ -124,7 +125,8 @@ $departments = $departmentQuery->fetch_all(MYSQLI_ASSOC);
             let rowText = row.innerText.toLowerCase();
             let rowCommunity = row.getAttribute('data-community') ? row.getAttribute('data-community').toLowerCase() : '';
             let rowDepartment = row.getAttribute('data-department') ? row.getAttribute('data-department').toLowerCase() : '';
-            let matchSearch = rowText.includes(filter);
+            let searchTerms = filter.split(',').map(term => term.trim()).filter(term => term !== '');
+let matchSearch = searchTerms.every(term => rowText.includes(term));
             let matchCommunity = !selectedCommunity || rowCommunity === selectedCommunity;
             let matchDepartment = !selectedDepartment || rowDepartment === selectedDepartment;
             row.style.display = (matchSearch && matchCommunity && matchDepartment) ? '' : 'none';
@@ -153,6 +155,8 @@ $departments = $departmentQuery->fetch_all(MYSQLI_ASSOC);
     function closeModal() {
         document.getElementById("userModal").style.display = "none";
     }
+    window.addEventListener('DOMContentLoaded', applyFilters);
+
 </script>
 
 <style>
