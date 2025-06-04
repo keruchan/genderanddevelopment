@@ -10,7 +10,6 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['evaluation_event_id']) || 
 $user_id = $_SESSION['user_id'];
 $event_id = $_SESSION['evaluation_event_id'];
 
-// Validate all expected radio inputs are present
 $required_fields = [
     'organization_1', 'organization_2', 'organization_3',
     'materials_1', 'materials_2',
@@ -54,6 +53,13 @@ $stmt->bind_param(
 );
 
 if ($stmt->execute()) {
+    // INSERT INTO certificates after successful evaluation
+    $cert_path = "certificates/sample_{$user_id}_event{$event_id}.docx";
+    $insertCert = $conn->prepare("INSERT INTO certificates (user_id, event_id, certificate_path, issued_at) VALUES (?, ?, ?, NOW())");
+    $insertCert->bind_param("iis", $user_id, $event_id, $cert_path);
+    $insertCert->execute();
+    $insertCert->close();
+
     echo "<script>alert('Evaluation submitted successfully!'); window.location.href = 'event_list.php';</script>";
 } else {
     echo "<script>alert('Submission failed. You may have already evaluated this event.'); window.location.href = 'event_list.php';</script>";

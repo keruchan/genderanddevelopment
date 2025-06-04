@@ -101,6 +101,7 @@ if (isset($_SESSION['user_id'])) {
                 <a href="#" class="dropbtn"><?= $displayName ?> <i class="fa fa-chevron-down"></i></a>
                 <ul class="dropdown-content">
                     <li><a href="user_profile.php">Profile</a></li>
+                    <li><a href="user_certificates.php">Certificates</a></li>
                     <li><a href="user_update_password.php">Update Password</a></li>
                     <li><a href="view_requests.php">View Requests</a></li>
                     <li><a href="view_concerns.php">View Concerns</a></li>
