@@ -164,15 +164,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resolve_user_id'])) {
             <?php
             $counter = 1;
             $query = "SELECT uv.user_id, u.firstname, u.lastname, u.archived, uv.violation_type, uv.remarks, uv.is_resolved,
-                             GROUP_CONCAT(DISTINCT CONCAT(e.title, ' (', e.event_date, ')') SEPARATOR '<br>') AS event_info,
-                             COUNT(*) AS violation_count, MIN(uv.id) AS min_id
-                      FROM user_violations uv
-                      JOIN users u ON uv.user_id = u.id
-                      JOIN events e ON uv.event_id = e.id
-                      WHERE CONCAT(u.firstname, ' ', u.lastname) LIKE CONCAT('%', ?, '%')
-                         OR e.title LIKE CONCAT('%', ?, '%')
-                      GROUP BY uv.user_id
-                      ORDER BY min_id DESC";
+            GROUP_CONCAT(DISTINCT CONCAT(e.title, ' (', e.event_date, ')') SEPARATOR '<br>') AS event_info,
+            COUNT(*) AS violation_count, MIN(uv.id) AS min_id
+     FROM user_violations uv
+     JOIN users u ON uv.user_id = u.id
+     JOIN events e ON uv.event_id = e.id
+     WHERE CONCAT(u.firstname, ' ', u.lastname) COLLATE utf8mb4_general_ci LIKE CONCAT('%', ?, '%')
+        OR e.title COLLATE utf8mb4_general_ci LIKE CONCAT('%', ?, '%')
+     GROUP BY uv.user_id
+     ORDER BY min_id DESC";
             $stmt = $conn->prepare($query);
             $stmt->bind_param("ss", $search, $search);
             $stmt->execute();
